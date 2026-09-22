@@ -1,0 +1,274 @@
+import type { FaqEntry, OpeningHours, Restaurant } from "@/lib/types";
+import { IMAGES } from "./images";
+
+// Demo-tenants. Hver restaurant er en selvstændig tenant med eget brand, menu,
+// åbningstider, telefonnummer og AI-agent – præcis som rigtige kunder på platformen.
+// Telefonnumre er pladsholdere; det rigtige demo-nummer sættes via
+// AIBOOKING_DEMO_PHONE (se src/lib/config.ts) eller i databasen.
+
+const PLACEHOLDER_PHONE = "+45 XX XX XX XX";
+
+const hours = (
+  weekday: [string, string],
+  friSat: [string, string],
+  sunday: [string, string] | null,
+): OpeningHours[] => [
+  sunday ? { day: 0, open: sunday[0], close: sunday[1] } : { day: 0, open: "00:00", close: "00:00", closed: true },
+  { day: 1, open: weekday[0], close: weekday[1] },
+  { day: 2, open: weekday[0], close: weekday[1] },
+  { day: 3, open: weekday[0], close: weekday[1] },
+  { day: 4, open: weekday[0], close: weekday[1] },
+  { day: 5, open: friSat[0], close: friSat[1] },
+  { day: 6, open: friSat[0], close: friSat[1] },
+];
+
+const commonFaq = (extra: FaqEntry[] = []): FaqEntry[] => [
+  ...extra,
+  {
+    question: "Kan jeg betale med MobilePay?",
+    answer: "Ja, du kan betale med kort og MobilePay online – eller betale ved afhentning.",
+    keywords: ["mobilepay", "betal", "betaling", "kort", "kontant"],
+  },
+  {
+    question: "Har I glutenfri muligheder?",
+    answer:
+      "Ja, flere retter kan laves glutenfri. Skriv det i kommentaren til din bestilling, så sørger køkkenet for det. Vi kan dog ikke garantere et 100% glutenfrit køkken.",
+    keywords: ["gluten", "glutenfri", "cøliaki"],
+  },
+  {
+    question: "Er der vegetariske eller veganske retter?",
+    answer: "Ja! Retter markeret med 🌱 er vegetariske, og mange kan laves veganske på bestilling.",
+    keywords: ["vegetar", "vegan", "vegetarisk", "veganske", "kød"],
+  },
+];
+
+export const DEMO_RESTAURANTS: Restaurant[] = [
+  {
+    id: "rest_bella_napoli",
+    slug: "bella-napoli",
+    name: "Bella Napoli",
+    tagline: "Moderne italiensk restaurant & pizzeria",
+    description:
+      "Stenovnsbagte napolitanske pizzaer, hjemmelavet pasta og saftige burgere i hjertet af København. Spis her, hent selv eller få det leveret.",
+    industry: "pizzeria",
+    emoji: "🍕",
+    accentColor: "#e8552d",
+    heroImage: IMAGES.heroPizza,
+    address: "Vesterbrogade 42",
+    city: "1620 København V",
+    phone: PLACEHOLDER_PHONE,
+    email: "hej@bellanapoli.demo",
+    parking: "Gadeparkering (zone 1) og P-hus Vesterport 3 min. til fods.",
+    openingHours: hours(["11:00", "22:00"], ["11:00", "23:00"], ["12:00", "21:00"]),
+    delivery: {
+      enabled: true,
+      fee: 39,
+      minimumOrder: 150,
+      areas: ["1620", "1650", "1654", "1799", "2450", "2500"],
+      estimatedMinutes: 40,
+    },
+    pickup: { enabled: true, estimatedMinutes: 20 },
+    booking: {
+      enabled: true,
+      maxPartySize: 30,
+      largePartyThreshold: 9,
+      slotMinutes: 30,
+      durationMinutes: 120,
+      rules:
+        "Borde holdes i 15 minutter. Selskaber på 9+ personer bekræftes manuelt af restauranten. Bordet er reserveret i 2 timer.",
+    },
+    paymentMethods: ["card", "mobilepay", "cash_on_pickup"],
+    faq: commonFaq([
+      {
+        question: "Hvor lang tid tager en pizza?",
+        answer: "Afhentning er typisk klar på 15–20 minutter. Levering tager ca. 35–45 minutter.",
+        keywords: ["hvor lang tid", "ventetid", "hvornår", "klar"],
+      },
+      {
+        question: "Kan man holde selskab hos jer?",
+        answer:
+          "Ja! Vi tager imod selskaber op til 30 personer og har en selskabsmenu fra 295 kr. pr. person. Selskaber på 9+ bekræftes personligt af restauranten.",
+        keywords: ["selskab", "fødselsdag", "firmafest", "stor gruppe", "julefrokost"],
+      },
+    ]),
+    widget: {
+      restaurantId: "rest_bella_napoli",
+      theme: "dark",
+      accentColor: "#e8552d",
+      welcomeMessage:
+        "Hej 👋 Jeg er AI-receptionisten hos Bella Napoli. Jeg kan hjælpe dig med bordreservation, madbestilling eller spørgsmål om restauranten.",
+      position: "bottom-right",
+      enabled: true,
+    },
+  },
+  {
+    id: "rest_brasserie_nordlys",
+    slug: "brasserie-nordlys",
+    name: "Brasserie Nordlys",
+    tagline: "Nordisk brasserie med årstidens råvarer",
+    description:
+      "Klassisk brasserie-stemning med nordiske råvarer, naturvin og plads til både hverdagsmiddage og store selskaber.",
+    industry: "restaurant",
+    emoji: "🍽️",
+    accentColor: "#c9a36b",
+    heroImage: IMAGES.fineDining,
+    address: "Nyhavn 18",
+    city: "1051 København K",
+    phone: PLACEHOLDER_PHONE,
+    email: "bord@nordlys.demo",
+    parking: "Nærmeste P-hus er Kongens Nytorv (Q-Park), 4 min. til fods.",
+    openingHours: hours(["17:00", "23:00"], ["12:00", "00:00"], ["12:00", "22:00"]),
+    delivery: { enabled: false, fee: 0, minimumOrder: 0, areas: [], estimatedMinutes: 0 },
+    pickup: { enabled: true, estimatedMinutes: 30 },
+    booking: {
+      enabled: true,
+      maxPartySize: 60,
+      largePartyThreshold: 8,
+      slotMinutes: 15,
+      durationMinutes: 150,
+      rules: "Selskaber på 8+ personer får tilsendt selskabsmenu. Afbud senest 24 timer før.",
+    },
+    paymentMethods: ["card", "mobilepay", "invoice"],
+    faq: commonFaq([
+      {
+        question: "Har I en selskabsmenu?",
+        answer: "Ja, 3 retter fra 425 kr. og 4 retter fra 525 kr. pr. person inkl. snacks. Vinmenu kan tilkøbes.",
+        keywords: ["selskab", "selskabsmenu", "firmafest", "julefrokost", "bryllup"],
+      },
+    ]),
+    widget: {
+      restaurantId: "rest_brasserie_nordlys",
+      theme: "dark",
+      accentColor: "#c9a36b",
+      welcomeMessage: "Godaften 👋 Jeg er Nordlys' digitale vært. Skal jeg finde et bord til dig?",
+      position: "bottom-right",
+      enabled: true,
+    },
+  },
+  {
+    id: "rest_smash_co",
+    slug: "smash-co",
+    name: "Smash & Co.",
+    tagline: "Smashburgers, shakes & sprøde fritter",
+    description: "Hurtige, saftige smashburgers lavet på friskhakket dansk oksekød. Bestil på 30 sekunder.",
+    industry: "fastfood",
+    emoji: "🍔",
+    accentColor: "#f5a524",
+    heroImage: IMAGES.burgerHero,
+    address: "Nørrebrogade 120",
+    city: "2200 København N",
+    phone: PLACEHOLDER_PHONE,
+    email: "hej@smashco.demo",
+    parking: "Cykelparkering foran. Bil: gadeparkering på sidegaderne.",
+    openingHours: hours(["11:00", "22:00"], ["11:00", "02:00"], ["12:00", "22:00"]),
+    delivery: { enabled: true, fee: 29, minimumOrder: 120, areas: ["2200", "2100", "2400"], estimatedMinutes: 30 },
+    pickup: { enabled: true, estimatedMinutes: 10 },
+    booking: {
+      enabled: false,
+      maxPartySize: 0,
+      largePartyThreshold: 0,
+      slotMinutes: 30,
+      durationMinutes: 60,
+      rules: "Vi tager ikke imod bordreservationer – kom forbi eller bestil takeaway.",
+    },
+    paymentMethods: ["card", "mobilepay"],
+    faq: commonFaq(),
+    widget: {
+      restaurantId: "rest_smash_co",
+      theme: "dark",
+      accentColor: "#f5a524",
+      welcomeMessage: "Yo 👋 Sulten? Jeg tager din bestilling på få sekunder.",
+      position: "bottom-right",
+      enabled: true,
+    },
+  },
+  {
+    id: "rest_sakura_sushi",
+    slug: "sakura-sushi",
+    name: "Sakura Sushi",
+    tagline: "Frisk sushi & takeaway",
+    description: "Håndrullet sushi lavet på bestilling. Afhent eller få leveret – vi hjælper gerne med allergener.",
+    industry: "sushi",
+    emoji: "🍣",
+    accentColor: "#ef4f6b",
+    heroImage: IMAGES.sushiHero,
+    address: "Frederiksberg Allé 7",
+    city: "1820 Frederiksberg C",
+    phone: PLACEHOLDER_PHONE,
+    email: "order@sakura.demo",
+    parking: "2 timers gratis parkering med p-skive på Frederiksberg Allé.",
+    openingHours: hours(["15:00", "21:30"], ["12:00", "22:00"], ["15:00", "21:00"]),
+    delivery: { enabled: true, fee: 35, minimumOrder: 200, areas: ["1820", "1850", "2000"], estimatedMinutes: 45 },
+    pickup: { enabled: true, estimatedMinutes: 25 },
+    booking: {
+      enabled: false,
+      maxPartySize: 0,
+      largePartyThreshold: 0,
+      slotMinutes: 30,
+      durationMinutes: 60,
+      rules: "Kun takeaway og levering.",
+    },
+    paymentMethods: ["card", "mobilepay"],
+    faq: commonFaq([
+      {
+        question: "Hvilke allergener er der i jeres sushi?",
+        answer:
+          "Vores sushi indeholder typisk fisk, soja og sesam. Tempura indeholder gluten og æg. Spørg mig om en bestemt ret, så fortæller jeg præcis hvad den indeholder.",
+        keywords: ["allergi", "allergen", "allergener", "skaldyr", "sesam", "soja"],
+      },
+    ]),
+    widget: {
+      restaurantId: "rest_sakura_sushi",
+      theme: "dark",
+      accentColor: "#ef4f6b",
+      welcomeMessage: "Konnichiwa 👋 Hvad skal du have i aften? Jeg hjælper også gerne med allergener.",
+      position: "bottom-right",
+      enabled: true,
+    },
+  },
+  {
+    id: "rest_cafe_lys",
+    slug: "cafe-lys",
+    name: "Café Lys",
+    tagline: "Brunch, kaffe & hygge",
+    description: "Kvarterets café med hjemmebagt brød, weekendbrunch og specialkaffe. Book bord eller bestil to go.",
+    industry: "cafe",
+    emoji: "☕",
+    accentColor: "#d98e5f",
+    heroImage: IMAGES.cafeInterior,
+    address: "Jægersborggade 30",
+    city: "2200 København N",
+    phone: PLACEHOLDER_PHONE,
+    email: "hej@cafelys.demo",
+    parking: "Begrænset gadeparkering – vi anbefaler cykel eller Metro (Nørrebros Runddel).",
+    openingHours: hours(["08:00", "18:00"], ["09:00", "20:00"], ["09:00", "17:00"]),
+    delivery: { enabled: false, fee: 0, minimumOrder: 0, areas: [], estimatedMinutes: 0 },
+    pickup: { enabled: true, estimatedMinutes: 10 },
+    booking: {
+      enabled: true,
+      maxPartySize: 20,
+      largePartyThreshold: 7,
+      slotMinutes: 30,
+      durationMinutes: 90,
+      rules: "Brunch-borde i weekenden holdes i 90 minutter. Selskaber på 7+ bekræftes af caféen.",
+    },
+    paymentMethods: ["card", "mobilepay", "cash_on_pickup"],
+    faq: commonFaq([
+      {
+        question: "Har I plantemælk?",
+        answer: "Ja – havre-, soja- og mandelmælk uden ekstra betaling.",
+        keywords: ["havremælk", "plantemælk", "laktose", "mælk"],
+      },
+    ]),
+    widget: {
+      restaurantId: "rest_cafe_lys",
+      theme: "light",
+      accentColor: "#d98e5f",
+      welcomeMessage: "Godmorgen ☀️ Skal jeg booke et brunch-bord eller gøre en kaffe klar til dig?",
+      position: "bottom-right",
+      enabled: true,
+    },
+  },
+];
+
+export const DEFAULT_RESTAURANT_SLUG = "bella-napoli";
