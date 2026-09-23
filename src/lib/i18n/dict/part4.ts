@@ -287,4 +287,12 @@ export const PART4: [string, string, string][] = [
   ["AI-receptionisten tager telefonen og voice-widget'en med restaurantens egen viden: menu, priser, åbningstider, regler og allergener.", "La recepcionista IA atiende el teléfono y el widget de voz con el conocimiento propio del restaurante: carta, precios, horarios, normas y alérgenos.", "The AI receptionist answers the phone and the voice widget with the restaurant's own knowledge: menu, prices, opening hours, rules and allergens."],
   ["AI'en kan", "La IA puede", "The AI can"],
   ["Lad AI'en booke for dig", "Deja que la IA reserve por ti", "Let the AI book for you"],
+  ["Live test", "Prueba en vivo", "Live test"],
+  ["Prøv AI-receptionisten her", "Prueba aquí el recepcionista de IA", "Try the AI receptionist here"],
+  ["Klik på knappen nedenfor – book bord, bestil mad eller stil et spørgsmål.", "Haz clic en el botón de abajo: reserva mesa, pide comida o haz una pregunta.", "Click the button below – book a table, order food or ask a question."],
+  ["Book bord til 4 personer fredag kl. 19", "Reservar mesa para 4 personas el viernes a las 19", "Book a table for 4 on Friday at 7 pm"],
+  ["Bestil mad til afhentning", "Pedir comida para recoger", "Order food for pickup"],
+  ["AI-receptionist · online", "Recepcionista de IA · en línea", "AI receptionist · online"],
+  ["Widget'en ligger nederst til højre på siden ↘", "El widget está abajo a la derecha de la página ↘", "The widget is in the bottom-right corner of the page ↘"],
+  ["Widget'en ligger nederst til venstre på siden ↙", "El widget está abajo a la izquierda de la página ↙", "The widget is in the bottom-left corner of the page ↙"],
 ];

@@ -33,6 +33,7 @@ export function SiteFooter() {
             <li><Link href="/demo/bella-napoli" className="hover:text-white">{t("Bella Napoli")}</Link></li>
             <li><Link href="/demo" className="hover:text-white">{t("Alle demo-restauranter")}</Link></li>
             <li><Link href="/admin" className="hover:text-white">{t("Admin & ordersystem")}</Link></li>
+            <li><Link href="/partner" className="hover:text-white">{t("Partner-portal")}</Link></li>
             <li><Link href="/kontakt" className="hover:text-white">{t("Book demo")}</Link></li>
           </ul>
         </div>
