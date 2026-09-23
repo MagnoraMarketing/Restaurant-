@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink-950: #0b0b0c;
+  --color-ink-900: #121214;
+  --color-ink-850: #17171a;
+  --color-ink-800: #1d1d21;
+  --color-ink-700: #2a2a30;
+  --color-ink-600: #3a3a42;
+  --color-ink-400: #8b8b96;
+  --color-ink-300: #b4b4bd;
+  --color-ember-300: #ffb38a;
+  --color-ember-400: #ff8a5c;
+  --color-ember-500: #f06a3a;
+  --color-ember-600: #e0512a;
+  --color-ember-700: #b83d1d;
+  --color-cream: #f7f1ea;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-pop: pop 0.35s cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-pulse-ring: pulse-ring 2s cubic-bezier(0.2, 0.6, 0.4, 1) infinite;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(16px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pop {
+    from { opacity: 0; transform: translateY(6px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
+  --animate-wave: wave 1.1s ease-in-out infinite;
+  --animate-slide-in: slide-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes wave {
+    0%, 100% { transform: scaleY(0.35); }
+    50% { transform: scaleY(1); }
+  }
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes pulse-ring {
+    0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent, #f06a3a) 55%, transparent); }
+    100% { box-shadow: 0 0 0 18px transparent; }
+  }
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    background: var(--color-ink-950);
+    color: #fff;
+    font-feature-settings: "ss01", "cv11";
+  }
+  ::selection {
+    background: var(--color-ember-500);
+    color: white;
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-ember-400);
+    outline-offset: 2px;
+  }
+}
+
+@utility container-x {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
+}
+
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-full px-5 py-3 text-sm font-semibold transition duration-200 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+@utility btn-primary {
+  @apply btn bg-ember-500 text-white shadow-lg shadow-ember-600/25 hover:bg-ember-400;
+}
+
+@utility btn-secondary {
+  @apply btn border border-white/15 bg-white/5 text-white backdrop-blur hover:border-white/30 hover:bg-white/10;
+}
+
+@utility btn-ghost {
+  @apply btn text-ink-300 hover:bg-white/5 hover:text-white;
+}
+
+@utility card {
+  @apply rounded-3xl border border-white/8 bg-ink-900/80 backdrop-blur;
+}
+
+@utility eyebrow {
+  @apply inline-flex items-center gap-2 rounded-full border border-ember-500/30 bg-ember-500/10 px-3 py-1 text-xs font-semibold tracking-wide text-ember-300 uppercase;
+}
+
+@utility h-display {
+  @apply font-display font-semibold tracking-tight text-balance;
+}
+
+@utility input {
+  @apply w-full rounded-2xl border border-white/10 bg-ink-850 px-4 py-3 text-sm text-white placeholder:text-ink-400 transition outline-none focus:border-ember-500/70 focus:ring-2 focus:ring-ember-500/20;
+}
+
+@utility label {
+  @apply mb-1.5 block text-xs font-semibold tracking-wide text-ink-300 uppercase;
+}
+
+@utility chip {
+  @apply inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-ink-300;
+}
+
+@utility grain {
+  background-image: radial-gradient(circle at 20% 10%, rgba(240, 106, 58, 0.18), transparent 45%),
+    radial-gradient(circle at 85% 30%, rgba(201, 163, 107, 0.1), transparent 40%);
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  body {
+    background: white;
+  }
+  aside,
+  header,
+  .print\:hidden {
+    display: none !important;
+  }
+}

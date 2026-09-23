@@ -1,0 +1,157 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { OFFERINGS, VENUE_TYPES, getVenueType } from "@/lib/demo/catalog";
+import { FoodImage } from "@/components/ui/FoodImage";
+import { Icon } from "@/components/ui/Icon";
+import { ConversationDemo } from "@/components/landing/ConversationDemo";
+import { OpenReceptionistButton } from "@/components/landing/OpenButton";
+import { QrNfcVisual } from "@/components/landing/Visuals";
+
+export function generateStaticParams() {
+  return VENUE_TYPES.map((v) => ({ type: v.slug }));
+}
+
+export async function generateMetadata({ params }: PageProps<"/brancher/[type]">): Promise<Metadata> {
+  const v = getVenueType((await params).type);
+  return v ? { title: `AI-receptionist til ${v.plural}`, description: v.intro } : {};
+}
+
+const FEATURE_LABELS = [
+  { key: "booking", emoji: "🍽️", label: "Bordreservation", text: "Book, ændr og annullér borde" },
+  { key: "orders", emoji: "🧾", label: "Bestillinger", text: "Ordrer direkte til køkkenet" },
+  { key: "takeaway", emoji: "🥡", label: "Takeaway", text: "Afhentning med ventetid" },
+  { key: "delivery", emoji: "🛵", label: "Levering", text: "Leveringsområder og gebyr" },
+  { key: "qr", emoji: "📱", label: "QR/NFC på bordet", text: "Online menukort pr. bord" },
+] as const;
+
+export default async function VenueTypePage({ params }: PageProps<"/brancher/[type]">) {
+  const v = getVenueType((await params).type);
+  if (!v) notFound();
+  const others = VENUE_TYPES.filter((x) => x.slug !== v.slug);
+  const lastAi = [...v.call].reverse().find((l) => l.who === "AI");
+
+  return (
+    <>
+      {/* HERO */}
+      <section className="relative overflow-hidden">
+        <FoodImage src={v.image} alt={v.name} emoji={v.emoji} className="absolute inset-0 h-full w-full" priority />
+        <div className="absolute inset-0 bg-gradient-to-r from-ink-950 via-ink-950/85 to-ink-950/30" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink-950 to-transparent" />
+        <div className="container-x relative flex min-h-[640px] flex-col justify-center pt-28 pb-16">
+          <Link href="/#brancher" className="mb-6 inline-flex w-fit items-center gap-2 text-sm text-ink-300 hover:text-white">
+            <Icon name="back" className="h-4 w-4" /> Alle typer
+          </Link>
+          <span className="eyebrow w-fit">{v.emoji} AI-receptionist til {v.plural}</span>
+          <h1 className="h-display mt-5 max-w-3xl text-4xl sm:text-6xl">{v.headline}</h1>
+          <p className="mt-5 max-w-2xl text-lg text-white/80">{v.intro}</p>
+          <div className="mt-8 flex flex-wrap gap-3">
+            <Link href={`/demo/${v.demoSlug}`} className="btn-primary !px-6 !py-3.5 text-base">Se demo for {v.name.toLowerCase()} <Icon name="arrow" className="h-4 w-4" /></Link>
+            <OpenReceptionistButton voice className="btn-secondary !px-6 !py-3.5 text-base"><Icon name="mic" className="h-4 w-4" /> Tal med AI&apos;en</OpenReceptionistButton>
+          </div>
+          <div className="mt-10 flex flex-wrap gap-2">
+            {FEATURE_LABELS.map((f) => {
+              const on = v.features[f.key];
+              return (
+                <span key={f.key} className={`rounded-full px-3.5 py-1.5 text-xs font-semibold ${on ? "bg-white/12 text-white ring-1 ring-white/20" : "bg-white/5 text-white/35 line-through"}`}>
+                  {f.emoji} {f.label}
+                </span>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* SAMTALE + HVAD AI KAN */}
+      <section className="container-x py-20">
+        <div className="grid items-start gap-12 lg:grid-cols-2">
+          <div>
+            <span className="eyebrow">Indgående opkald</span>
+            <h2 className="h-display mt-5 text-4xl">Sådan lyder et opkald hos en {v.name.toLowerCase()}</h2>
+            <p className="mt-4 text-ink-300">AI-receptionisten tager telefonen og voice-widget&apos;en med restaurantens egen viden: menu, priser, åbningstider, regler og allergener.</p>
+            <h3 className="mt-10 text-sm font-bold tracking-wider text-ink-400 uppercase">AI&apos;en kan</h3>
+            <ul className="mt-3 grid gap-2">
+              {v.aiCan.map((a) => (
+                <li key={a} className="flex items-center gap-3 rounded-2xl border border-white/8 bg-ink-900 px-4 py-3 text-sm">
+                  <Icon name="check" className="h-4 w-4 text-ember-400" /> {a}
+                </li>
+              ))}
+            </ul>
+            <h3 className="mt-10 text-sm font-bold tracking-wider text-ink-400 uppercase">Typiske spørgsmål den besvarer</h3>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {v.questions.map((q) => (
+                <OpenReceptionistButton key={q} message={q} className="chip hover:border-ember-500/50 hover:text-white">
+                  “{q}”
+                </OpenReceptionistButton>
+              ))}
+            </div>
+          </div>
+          <ConversationDemo script={v.call} title={`Indgående opkald · ${v.name}`} doneTitle="Klaret af AI ✓" doneText={lastAi?.text ?? ""} />
+        </div>
+      </section>
+
+      {/* FUNKTIONER */}
+      <section className="border-y border-white/8 bg-ink-900/40 py-20">
+        <div className="container-x">
+          <h2 className="h-display text-center text-4xl">Det får en {v.name.toLowerCase()} med AIbooking</h2>
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+            {FEATURE_LABELS.map((f) => {
+              const on = v.features[f.key];
+              return (
+                <div key={f.key} className={`card p-6 ${on ? "" : "opacity-45"}`}>
+                  <span className="text-3xl">{f.emoji}</span>
+                  <p className="mt-4 font-semibold">{f.label}</p>
+                  <p className="mt-1 text-sm text-ink-400">{f.text}</p>
+                  <p className={`mt-3 text-xs font-semibold ${on ? "text-emerald-300" : "text-ink-400"}`}>{on ? "✓ Typisk brugt" : "Kan tilvælges"}</p>
+                </div>
+              );
+            })}
+          </div>
+          {v.features.qr && (
+            <div className="mt-16 grid items-center gap-10 lg:grid-cols-2">
+              <div>
+                <h3 className="h-display text-3xl">📱 QR-kode & NFC-anmeldelser</h3>
+                <p className="mt-3 text-ink-300">Gæsten scanner QR-koden, ser menukortet og bestiller – ordren kommer i køkkenet med bordnummer. NFC-chippen sender gæsten direkte til jeres anmeldelsesside.</p>
+                <p className="mt-3 text-sm font-semibold text-ember-300">QR-kode til print 10 € · NFC-chip til anmeldelser 50 €</p>
+                <Link href={`/m/${v.demoSlug}?bord=4`} className="btn-primary mt-6">Prøv som gæst ved bord 4</Link>
+              </div>
+              <QrNfcVisual slug={v.demoSlug} table={4} />
+            </div>
+          )}
+        </div>
+      </section>
+
+      {/* LØSNINGER + CTA */}
+      <section className="container-x py-20">
+        <h2 className="h-display text-center text-4xl">Samarbejdsmuligheder</h2>
+        <div className="mt-10 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {OFFERINGS.map((o) => (
+            <Link key={o.key} href={`/#${o.key}`} className="card flex items-center gap-3 p-4 transition hover:border-ember-500/40">
+              <span className="text-2xl">{o.emoji}</span>
+              <span>
+                <span className="block text-sm font-semibold">{o.title}</span>
+                <span className="text-xs text-ink-400">{o.short}</span>
+              </span>
+            </Link>
+          ))}
+        </div>
+        <div className="mt-14 rounded-[36px] bg-gradient-to-br from-ember-500 to-ember-700 p-10 text-center sm:p-14">
+          <h2 className="h-display text-3xl sm:text-4xl">Klar til at give jeres {v.name.toLowerCase()} en AI-receptionist?</h2>
+          <p className="mx-auto mt-3 max-w-xl text-white/85">Vi sætter det op med jeres menu, åbningstider og telefonnummer – og viser det på et demo-møde.</p>
+          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+            <Link href={`/kontakt?type=${v.slug}`} className="btn bg-white !px-7 !py-3.5 text-ink-950 hover:bg-cream">Book demo</Link>
+            <Link href={`/demo/${v.demoSlug}`} className="btn border border-white/40 !px-7 !py-3.5 text-white hover:bg-white/10">Prøv demoen</Link>
+          </div>
+        </div>
+        <div className="mt-14">
+          <p className="text-center text-sm text-ink-400">Andre typer</p>
+          <div className="mt-4 flex flex-wrap justify-center gap-2">
+            {others.map((o) => (
+              <Link key={o.slug} href={`/brancher/${o.slug}`} className="chip hover:text-white">{o.emoji} {o.name}</Link>
+            ))}
+          </div>
+        </div>
+      </section>
+    </>
+  );
+}
