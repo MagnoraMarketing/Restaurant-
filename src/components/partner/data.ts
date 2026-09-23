@@ -17,6 +17,10 @@ export interface PartnerCustomer {
   aiNumber: string;
   tables: number;
   signedAt: string;
+  /** Engangssalg (hjemmeside + ekstra services) i € */
+  setupValue: number;
+  /** Underskrevet i indeværende måned */
+  newThisMonth?: boolean;
   /** Hvor mange trin der allerede er klaret pr. produkt (startværdi) */
   progress: Record<ProductKey, number>;
   products: ProductKey[];
@@ -27,7 +31,6 @@ export const PARTNER = {
   company: "Magnora Sales",
   initials: "MH",
   tier: "Guld-partner",
-  commission: 1840,
   payoutDate: "1. okt.",
 };
 
@@ -93,37 +96,37 @@ export const PRODUCTS: Record<ProductKey, { label: string; short: string; icon: 
 
 export const CUSTOMERS: PartnerCustomer[] = [
   {
-    id: "c1", name: "Bella Napoli", emoji: "🍕", city: "København N", contact: "Giulia Rossi", phone: "+45 22 41 18 90",
+    id: "c1", setupValue: 560, newThisMonth: true, name: "Bella Napoli", emoji: "🍕", city: "København N", contact: "Giulia Rossi", phone: "+45 22 41 18 90",
     plan: "Premium", demoSlug: "bella-napoli", slug: "bella-napoli", widgetId: "prfA6rbfVJC7K2", aiNumber: "+45 78 75 10 21",
     tables: 18, signedAt: "12. sep.", products: ["qr", "nfc", "widget", "inbound"],
     progress: { qr: 5, nfc: 5, widget: 3, inbound: 1 },
   },
   {
-    id: "c2", name: "Brasserie Nordlys", emoji: "🍽️", city: "Aarhus C", contact: "Anders Kjær", phone: "+45 31 55 02 77",
+    id: "c2", setupValue: 440, name: "Brasserie Nordlys", emoji: "🍽️", city: "Aarhus C", contact: "Anders Kjær", phone: "+45 31 55 02 77",
     plan: "Pro", demoSlug: "brasserie-nordlys", slug: "brasserie-nordlys", widgetId: "nrdL8x2PqK91Za", aiNumber: "+45 78 75 10 34",
-    tables: 24, signedAt: "8. sep.", products: ["qr", "widget", "inbound"],
+    tables: 24, signedAt: "18. aug.", products: ["qr", "widget", "inbound"],
     progress: { qr: 2, nfc: 0, widget: 0, inbound: 0 },
   },
   {
-    id: "c3", name: "Smash & Co", emoji: "🍔", city: "Odense", contact: "Sara Lund", phone: "+45 40 12 88 63",
+    id: "c3", setupValue: 380, name: "Smash & Co", emoji: "🍔", city: "Odense", contact: "Sara Lund", phone: "+45 40 12 88 63",
     plan: "Pro", demoSlug: "smash-co", slug: "smash-co", widgetId: "smX4Kd90LmQe2B", aiNumber: "+45 78 75 10 47",
-    tables: 12, signedAt: "2. sep.", products: ["qr", "nfc", "widget", "inbound"],
+    tables: 12, signedAt: "2. aug.", products: ["qr", "nfc", "widget", "inbound"],
     progress: { qr: 5, nfc: 5, widget: 5, inbound: 5 },
   },
   {
-    id: "c4", name: "Sakura Sushi", emoji: "🍣", city: "Frederiksberg", contact: "Ken Tanaka", phone: "+45 26 70 33 12",
+    id: "c4", setupValue: 260, newThisMonth: true, name: "Sakura Sushi", emoji: "🍣", city: "Frederiksberg", contact: "Ken Tanaka", phone: "+45 26 70 33 12",
     plan: "Starter", demoSlug: "sakura-sushi", slug: "sakura-sushi", widgetId: "skR2Wn7HbT3cVy", aiNumber: "+45 78 75 10 58",
     tables: 10, signedAt: "19. sep.", products: ["qr", "widget"],
     progress: { qr: 0, nfc: 0, widget: 1, inbound: 0 },
   },
   {
-    id: "c5", name: "Café Havnen", emoji: "☕", city: "Aalborg", contact: "Mette Juhl", phone: "+45 51 90 47 20",
+    id: "c5", setupValue: 320, newThisMonth: true, name: "Café Havnen", emoji: "☕", city: "Aalborg", contact: "Mette Juhl", phone: "+45 51 90 47 20",
     plan: "Starter", slug: "cafe-havnen", widgetId: "cfH9Pq1ZxR5nMa", aiNumber: "+45 78 75 10 62",
     tables: 14, signedAt: "21. sep.", products: ["qr", "nfc"],
     progress: { qr: 0, nfc: 0, widget: 0, inbound: 0 },
   },
   {
-    id: "c6", name: "Thai Orchid", emoji: "🌶️", city: "Vejle", contact: "Nok Sriwan", phone: "+45 28 63 15 09",
+    id: "c6", setupValue: 200, newThisMonth: true, name: "Thai Orchid", emoji: "🌶️", city: "Vejle", contact: "Nok Sriwan", phone: "+45 28 63 15 09",
     plan: "Pro", slug: "thai-orchid", widgetId: "thO3Vb8KcY6wLe", aiNumber: "+45 78 75 10 75",
     tables: 20, signedAt: "15. sep.", products: ["widget", "inbound"],
     progress: { qr: 0, nfc: 0, widget: 4, inbound: 3 },

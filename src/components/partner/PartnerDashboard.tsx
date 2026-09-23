@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/Icon";
 import { QrCode } from "@/components/landing/QrCode";
 import { useT } from "@/components/i18n/I18nProvider";
 import { publicConfig } from "@/lib/config";
+import { PARTNER_SHARE, PLATFORM_MONTHLY, eur } from "@/lib/demo/catalog";
 import { ACTIVITY, CUSTOMERS, FORWARD_MODES, PARTNER, PLATFORMS, PRODUCTS, type PartnerCustomer, type ProductKey } from "./data";
 
 const STORAGE_KEY = "aibooking-partner-demo-v1";
@@ -92,6 +93,13 @@ export function PartnerDashboard() {
     };
   }, [checks]);
 
+  const earnings = useMemo(() => {
+    const newSales = CUSTOMERS.filter((c) => c.newThisMonth);
+    const sales = newSales.reduce((s, c) => s + c.setupValue, 0) * PARTNER_SHARE;
+    const recurring = CUSTOMERS.length * PLATFORM_MONTHLY * PARTNER_SHARE;
+    return { newCount: newSales.length, sales, recurring, total: sales + recurring };
+  }, []);
+
   const row = stats.rows.find((r) => r.c.id === selectedId)!;
   const customer = row.c;
   const activeTab = customer.products.includes(tab) ? tab : customer.products[0];
@@ -174,7 +182,7 @@ export function PartnerDashboard() {
           <Kpi label={t("Aktive kunder")} value={String(CUSTOMERS.length)} sub={t("+2 denne måned")} icon="users" />
           <Kpi label={t("Opsætninger i gang")} value={String(stats.doing)} sub={t("Helt live: {n}", { n: stats.live })} icon="bolt" />
           <Kpi label={t("Produkter live")} value={String(stats.productsLive)} sub={t("QR · NFC · widget · telefon")} icon="check" />
-          <Kpi label={t("Provision (sep.)")} value={`${PARTNER.commission.toLocaleString("da-DK")} €`} sub={t("Udbetales {d}", { d: PARTNER.payoutDate })} icon="card" accent />
+          <Kpi label={t("Din indtjening (sep.)")} value={eur(earnings.total)} sub={t("Udbetales {d}", { d: PARTNER.payoutDate })} icon="card" accent />
         </section>
 
         <div className="grid gap-6 lg:grid-cols-[340px_1fr]">
@@ -309,6 +317,41 @@ export function PartnerDashboard() {
                 {activeTab === "nfc" && <NfcTool customer={customer} origin={origin} />}
                 {activeTab === "widget" && <WidgetTool customer={customer} />}
                 {activeTab === "inbound" && <InboundTool customer={customer} />}
+              </div>
+            </div>
+
+            <div className="card relative overflow-hidden p-5 sm:p-6">
+              <div className="pointer-events-none absolute -bottom-24 -left-16 h-56 w-56 rounded-full bg-ember-500/10 blur-3xl" />
+              <div className="relative flex flex-wrap items-start justify-between gap-3">
+                <div>
+                  <h3 className="font-semibold">{t("Sådan tjener du")}</h3>
+                  <p className="mt-1 text-sm text-ink-400">
+                    {t("Du får {pct} % af alt du sælger – og {pct} % af kundens abonnement hver måned, så længe kunden er aktiv.", { pct: PARTNER_SHARE * 100 })}
+                  </p>
+                </div>
+                <span className="chip !border-ember-500/30 !bg-ember-500/10 !text-ember-300">{t("{pct} % partner-andel", { pct: PARTNER_SHARE * 100 })}</span>
+              </div>
+              <div className="relative mt-5 grid gap-3 sm:grid-cols-3">
+                <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-4">
+                  <p className="text-xs text-ink-400">{t("Salg denne måned")}</p>
+                  <p className="h-display mt-1 text-2xl tabular-nums">{eur(earnings.sales)}</p>
+                  <p className="mt-1 text-[11px] text-ink-400">{t("{pct} % af {n} nye aftaler (hjemmeside fra 200 € + ekstra services)", { pct: PARTNER_SHARE * 100, n: earnings.newCount })}</p>
+                </div>
+                <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-4">
+                  <p className="text-xs text-ink-400">{t("Abonnementer hver måned")}</p>
+                  <p className="h-display mt-1 text-2xl tabular-nums">{eur(earnings.recurring)}</p>
+                  <p className="mt-1 text-[11px] text-ink-400">{t("{n} kunder × {amount} ({pct} % af {price}/md.)", { n: CUSTOMERS.length, amount: eur(PLATFORM_MONTHLY * PARTNER_SHARE), pct: PARTNER_SHARE * 100, price: eur(PLATFORM_MONTHLY) })}</p>
+                </div>
+                <div className="rounded-2xl border border-ember-500/30 bg-gradient-to-br from-ember-500/15 to-transparent p-4">
+                  <p className="text-xs text-ink-400">{t("I alt til udbetaling")}</p>
+                  <p className="h-display mt-1 text-2xl tabular-nums">{eur(earnings.total)}</p>
+                  <p className="mt-1 text-[11px] text-ink-400">{t("Udbetales {d}", { d: PARTNER.payoutDate })}</p>
+                </div>
+              </div>
+              <div className="relative mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-ink-400">
+                <span>{customer.emoji} {customer.name}:</span>
+                <span>{t("salg")} <b className="text-white">{eur(customer.setupValue)}</b> → {t("din andel")} <b className="text-ember-300">{eur(customer.setupValue * PARTNER_SHARE)}</b></span>
+                <span>{t("abonnement")} <b className="text-white">{eur(PLATFORM_MONTHLY)}/{t("md.")}</b> → {t("din andel")} <b className="text-ember-300">{eur(PLATFORM_MONTHLY * PARTNER_SHARE)}/{t("md.")}</b></span>
               </div>
             </div>
 
