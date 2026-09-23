@@ -6,6 +6,7 @@ import { api } from "@/lib/client/api";
 import { useAdmin, usePoll } from "@/components/admin/AdminContext";
 import { PageTitle } from "@/components/admin/AdminShell";
 import { OrderCard } from "@/components/admin/OrderCard";
+import { useT } from "@/components/i18n/I18nProvider";
 
 const COLUMNS: { key: string; title: string; statuses: OrderStatus[] }[] = [
   { key: "new", title: "Nye ordrer", statuses: ["new"] },
@@ -17,6 +18,7 @@ const COLUMNS: { key: string; title: string; statuses: OrderStatus[] }[] = [
 const NAMES = ["Emma Madsen", "Oliver Jensen", "Freja Poulsen", "Noah Kristensen", "Ida Thomsen", "Lucas Rasmussen"];
 
 export default function OrdersPage() {
+  const t = useT();
   const { restaurant } = useAdmin();
   const { data, setData, error } = usePoll<Order[]>(restaurant ? `/api/orders?restaurantId=${restaurant.id}` : null, 4000);
   const [simulating, setSimulating] = useState(false);
@@ -29,7 +31,7 @@ export default function OrdersPage() {
     if (seen.current) {
       const fresh = data.find((o) => !seen.current!.has(o.id) && o.status === "new");
       if (fresh) {
-        setFlash(`Ny ordre #${fresh.orderNumber} fra ${fresh.customer.name}`);
+        setFlash(t("Ny ordre #{n} fra {name}", { n: fresh.orderNumber, name: fresh.customer.name }));
         setTimeout(() => setFlash(""), 4000);
       }
     }
@@ -78,11 +80,11 @@ export default function OrdersPage() {
   return (
     <>
       <PageTitle
-        title="Ordrer"
-        text="Live køkken-skærm. Opdateres automatisk hvert 4. sekund – ordrer fra hjemmeside, chat, AI Voice, telefon og API."
+        title={t("Ordrer")}
+        text={t("Live køkken-skærm. Opdateres automatisk hvert 4. sekund – ordrer fra hjemmeside, chat, AI Voice, telefon og API.")}
         actions={
           <button onClick={simulate} disabled={simulating} className="btn-primary">
-            🎙️ {simulating ? "Opretter…" : "Simulér AI-telefonordre"}
+            🎙️ {simulating ? t("Opretter…") : t("Simulér AI-telefonordre")}
           </button>
         }
       />
@@ -94,14 +96,14 @@ export default function OrdersPage() {
           return (
             <section key={c.key}>
               <h2 className="mb-3 flex items-center justify-between text-sm font-semibold">
-                {c.title}
+                {t(c.title)}
                 <span className="rounded-full bg-white/8 px-2 py-0.5 text-xs text-ink-300">{list.length}</span>
               </h2>
               <div className="space-y-3">
                 {list.map((o) => (
                   <OrderCard key={o.id} order={o} onChange={update} />
                 ))}
-                {list.length === 0 && <p className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-ink-400">Ingen ordrer</p>}
+                {list.length === 0 && <p className="rounded-2xl border border-dashed border-white/10 p-6 text-center text-xs text-ink-400">{t("Ingen ordrer")}</p>}
               </div>
             </section>
           );

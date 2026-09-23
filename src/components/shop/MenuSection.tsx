@@ -7,8 +7,10 @@ import { FoodImage } from "@/components/ui/FoodImage";
 import { Icon } from "@/components/ui/Icon";
 import { useCart } from "./CartProvider";
 import { ProductModal } from "./ProductModal";
+import { useT } from "@/components/i18n/I18nProvider";
 
 export function MenuSection() {
+  const t = useT();
   const { menu, restaurant } = useCart();
   const [active, setActive] = useState<Product | null>(null);
   const [cat, setCat] = useState<string>("all");
@@ -29,7 +31,7 @@ export function MenuSection() {
               className={`shrink-0 rounded-full px-4 py-2 text-sm font-medium transition ${cat === c.id ? "text-white" : "text-ink-300 hover:text-white"}`}
               style={cat === c.id ? { background: accent } : undefined}
             >
-              {c.emoji} {c.name}
+              {c.emoji} {t(c.name)}
             </button>
           ))}
         </div>
@@ -39,7 +41,7 @@ export function MenuSection() {
         {categories.map((c) => (
           <section key={c.id} id={`cat-${c.id}`} className="scroll-mt-36">
             <h3 className="h-display mb-4 text-2xl">
-              {c.emoji} {c.name}
+              {c.emoji} {t(c.name)}
             </h3>
             <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
               {menu.products
@@ -51,17 +53,17 @@ export function MenuSection() {
                     onClick={() => setActive(p)}
                     className="group card flex overflow-hidden text-left transition hover:-translate-y-0.5 hover:border-white/20 disabled:opacity-50 sm:flex-col"
                   >
-                    <FoodImage src={p.image} alt={p.name} emoji={p.emoji} className="h-auto w-28 shrink-0 sm:h-44 sm:w-full" />
+                    <FoodImage src={p.image} alt={t(p.name)} emoji={p.emoji} className="h-auto w-28 shrink-0 sm:h-44 sm:w-full" />
                     <div className="flex flex-1 flex-col p-4">
                       <div className="flex items-start justify-between gap-2">
                         <h4 className="font-semibold">
-                          {p.name} {p.tags?.includes("vegetar") && <span title="Vegetarisk">🌱</span>}
+                          {t(p.name)} {p.tags?.includes("vegetar") && <span title={t("Vegetarisk")}>🌱</span>}
                         </h4>
-                        {p.popular && <span className="shrink-0 rounded-full bg-white/8 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-ember-300 uppercase">Populær</span>}
+                        {p.popular && <span className="shrink-0 rounded-full bg-white/8 px-2 py-0.5 text-[10px] font-semibold tracking-wide text-ember-300 uppercase">{t("Populær")}</span>}
                       </div>
-                      <p className="mt-1 line-clamp-2 text-sm text-ink-400">{p.description}</p>
+                      <p className="mt-1 line-clamp-2 text-sm text-ink-400">{t(p.description)}</p>
                       <div className="mt-auto flex items-center justify-between pt-3">
-                        <span className="font-semibold">{p.available ? kr(p.price) : "Udsolgt"}</span>
+                        <span className="font-semibold">{p.available ? kr(p.price) : t("Udsolgt")}</span>
                         <span className="grid h-9 w-9 place-items-center rounded-full text-white transition group-hover:scale-110" style={{ background: accent }}>
                           <Icon name="plus" className="h-4 w-4" />
                         </span>

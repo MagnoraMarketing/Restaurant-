@@ -3,9 +3,11 @@
 import { useEffect } from "react";
 import { useSearchParams } from "next/navigation";
 import { useCart } from "@/components/shop/CartProvider";
+import { useT } from "@/components/i18n/I18nProvider";
 
 /** Viser "Du bestiller til bord X" når gæsten kommer via QR-kode / NFC-chip på bordet. */
 export function TableBanner() {
+  const t = useT();
   const params = useSearchParams();
   const { restaurant, tableNumber, setTableNumber } = useCart();
   const bord = params.get("bord");
@@ -19,9 +21,9 @@ export function TableBanner() {
   if (!tableNumber) return null;
   return (
     <div className="border-b border-white/8 px-4 py-2.5 text-center text-sm" style={{ background: `color-mix(in oklab, ${restaurant.accentColor} 18%, #0b0b0c)` }}>
-      🪑 Du bestiller til <strong>bord {tableNumber}</strong> – maden bringes til bordet.{" "}
+      {t("🪑 Du bestiller til")} <strong>{t("bord {n}", { n: tableNumber })}</strong> – {t("maden bringes til bordet.")}{" "}
       <button onClick={() => setTableNumber(null)} className="ml-2 text-xs text-white/60 underline hover:text-white">
-        Bestil i stedet takeaway
+        {t("Bestil i stedet takeaway")}
       </button>
     </div>
   );

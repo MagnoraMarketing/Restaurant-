@@ -16,11 +16,11 @@ const ctx = {
   },
 };
 
-async function run(title: string, lines: string[]) {
+async function run(title: string, lines: string[], locale: "da" | "es" | "en" = "da") {
   console.log(`\n=== ${title}`);
   let s: AssistantState = initialState();
   for (const l of lines) {
-    const res = await respond(ctx as any, s, l);
+    const res = await respond({ ...ctx, locale } as any, s, l);
     s = res.state;
     console.log(`> ${l}`);
     for (const m of res.replies) console.log(`  AI: ${m.text}${m.card?.type === "summary" ? ` [${m.card.lines.map((x) => x.label).join(" | ")} = ${m.card.total ?? ""}]` : ""}`);
@@ -32,4 +32,9 @@ async function run(title: string, lines: string[]) {
   await run("Booking one-shot", ["Book bord til 4 personer fredag kl. 19:00", "Anna Jensen", "22334455", "ja"]);
   await run("Spørgsmål", ["Hvornår har I åbent?", "Leverer I til 2450?", "Hvilke allergener er der i Margherita?", "Hvor kan jeg parkere?", "Kan man holde fødselsdag hos jer?"]);
   await run("Takeaway", ["2 pepperoni uden mozzarella og en familie margherita", "en cola", "det var det", "jeg henter"]);
+  await run("Español – pedido", ["Hola, quiero pedir dos pizzas", "Una pepperoni y una hawaii con extra de queso", "No, eso es todo", "A domicilio", "Istedgade 12, 1650 København V", "Pedro García", "612 345 678", "sí"], "es");
+  await run("Español – reserva", ["Reservar mesa para 4 personas el viernes a las 19:00", "Ana López", "612345678", "sí"], "es");
+  await run("Español – preguntas", ["¿Cuándo abrís?", "¿Repartís en el 2450?", "¿Dónde puedo aparcar?"], "es");
+  await run("English", ["I'd like to order 2 margherita", "that's all", "pickup", "John Smith", "+44 7700 900123", "yes"], "en");
+  await run("English – booking", ["Book a table for 2 tomorrow at 7pm", "Jane Doe", "22334455", "yes"], "en");
 })();

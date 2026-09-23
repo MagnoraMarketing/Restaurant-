@@ -1,5 +1,8 @@
 import type { OrderItem, OrderItemModifier, Product } from "@/lib/types";
 
+type T = (s: string) => string;
+const same: T = (s) => s;
+
 // Delt pris-logik for klient (kurv) og server (ordreoprettelse).
 // Serveren genberegner ALTID priser ud fra menuen – klientens priser stoles aldrig på.
 
@@ -37,13 +40,13 @@ export function buildOrderItem(
 }
 
 /** Modifier-tekst til visning, fx "Familie (45 cm), + ekstra ost, uden løg". Standardvalg (0 kr.) udelades. */
-export function describeModifiers(mods: OrderItemModifier[], product?: Product): string {
+export function describeModifiers(mods: OrderItemModifier[], product?: Product, t: T = same): string {
   return mods
     .filter((m) => {
       if (m.kind !== "choice" || m.price > 0) return true;
       const group = product?.modifierGroups.find((g) => g.id === m.groupId);
       return !group || group.options[0]?.id !== m.optionId;
     })
-    .map((m) => (m.kind === "add" ? `+ ${m.name.toLowerCase()}` : m.kind === "remove" ? m.name.toLowerCase() : m.name))
+    .map((m) => (m.kind === "add" ? `+ ${t(m.name).toLowerCase()}` : m.kind === "remove" ? t(m.name).toLowerCase() : t(m.name)))
     .join(", ");
 }
