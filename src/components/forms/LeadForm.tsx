@@ -5,8 +5,9 @@ import { api } from "@/lib/client/api";
 import { PRICES, eur } from "@/lib/demo/catalog";
 import { useI18n, useT } from "@/components/i18n/I18nProvider";
 
-const ALL = [...PRICES.base, ...PRICES.addons, ...PRICES.ai];
+const ALL = [...PRICES.base, ...PRICES.platform, ...PRICES.addons, ...PRICES.ai];
 const isAI = (key: string) => PRICES.ai.some((p) => p.key === key);
+const isMonthly = (key: string) => PRICES.platform.some((p) => p.key === key);
 
 export function LeadForm({ preselect = [] }: { preselect?: string[] }) {
   const { t, locale } = useI18n();
@@ -26,7 +27,7 @@ export function LeadForm({ preselect = [] }: { preselect?: string[] }) {
       onSubmit={async (e) => {
         e.preventDefault();
         setStatus("sending");
-        const data = { ...Object.fromEntries(new FormData(e.currentTarget)), services: chosen.map((c) => `${c.name} (${eur(c.price)}${c.unit ? ` / ${c.unit}` : ""})`).join(", "), language: locale };
+        const data = { ...Object.fromEntries(new FormData(e.currentTarget)), services: chosen.map((c) => `${c.name} (${c.from ? "fra " : ""}${eur(c.price)}${c.unit ? ` / ${c.unit}` : ""})`).join(", "), language: locale };
         try {
           await api("/api/leads", { method: "POST", body: JSON.stringify(data) });
           setStatus("done");
@@ -74,13 +75,14 @@ export function LeadForm({ preselect = [] }: { preselect?: string[] }) {
                 <input type="checkbox" checked={picked.includes(p.key)} onChange={() => toggle(p.key)} className="accent-[#f06a3a]" />
                 {p.emoji} {t(p.name)}
               </span>
-              <span className="shrink-0 font-semibold">{eur(p.price)}{p.unit && <span className="font-normal text-ink-400"> / {t(p.unit)}</span>}</span>
+              <span className="shrink-0 font-semibold">{p.from && <span className="font-normal text-ink-400">{t("fra")} </span>}{eur(p.price)}{p.unit && <span className="font-normal text-ink-400"> / {t(p.unit)}</span>}</span>
             </label>
           ))}
         </div>
         {chosen.length > 0 && (
           <p className="mt-3 text-sm text-ink-300">
-            {t("Valgt:")} <strong className="text-white">{eur(chosen.filter((c) => !isAI(c.key)).reduce((s, c) => s + c.price, 0))}</strong>
+            {t("Valgt:")} <strong className="text-white">{chosen.some((c) => c.from) && `${t("fra")} `}{eur(chosen.filter((c) => !isAI(c.key) && !isMonthly(c.key)).reduce((s, c) => s + c.price, 0))}</strong>
+            {chosen.some((c) => isMonthly(c.key)) && <> + {eur(PRICES.platform[0].price)} / {t("md.")}</>}
             {chosen.some((c) => isAI(c.key)) && <> + {t("AI-minutpakke")} {chosen.filter((c) => isAI(c.key)).map((c) => `${eur(c.price)} / ${t(c.unit ?? "")}`).join(" + ")}</>}
           </p>
         )}

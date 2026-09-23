@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { PRICES, eur, type PriceItem } from "@/lib/demo/catalog";
+import { PARTNER_SHARE, PLATFORM_MONTHLY, PRICES, eur, type PriceItem } from "@/lib/demo/catalog";
 import { Icon } from "@/components/ui/Icon";
 import { useT } from "@/components/i18n/I18nProvider";
 
@@ -10,6 +10,7 @@ export function Pricing() {
   const t = useT();
   const base = PRICES.base[0];
   return (
+    <>
     <div className="grid gap-5 lg:grid-cols-[1.1fr_1fr]">
       {/* Grundpakke */}
       <div className="relative flex flex-col overflow-hidden rounded-[32px] bg-gradient-to-br from-ember-500 via-ember-600 to-ember-700 p-8 shadow-2xl shadow-ember-600/30">
@@ -18,7 +19,11 @@ export function Pricing() {
         <p className="mt-5 text-4xl">{base.emoji}</p>
         <h3 className="h-display mt-3 text-3xl">{t(base.name)}</h3>
         <p className="mt-2 max-w-md text-white/85">{t(base.text)}</p>
-        <p className="h-display mt-6 text-6xl">{eur(base.price)}</p>
+        <p className="mt-6 flex items-baseline gap-2">
+          <span className="text-lg font-semibold text-white/80">{t("fra")}</span>
+          <span className="h-display text-6xl">{eur(base.price)}</span>
+        </p>
+        <p className="mt-1 text-sm text-white/80">{t("+ ekstra services efter behov · platform {price} / md.", { price: eur(PLATFORM_MONTHLY) })}</p>
         <ul className="mt-6 grid gap-2 text-sm sm:grid-cols-2">
           {["Mobilvenligt design", "Online menukort", "Åbningstider & kort", "Jeres eget domæne", "Klar til bestilling & booking", "Klar til AI-receptionist"].map((x) => (
             <li key={x} className="flex gap-2"><Icon name="check" className="mt-0.5 h-4 w-4 shrink-0" /> {t(x)}</li>
@@ -30,10 +35,26 @@ export function Pricing() {
       </div>
 
       <div className="grid gap-5">
-        <PriceGroup title={t("Tilkøb")} items={PRICES.addons} />
-        <PriceGroup title={t("AI-receptionist")} items={PRICES.ai} highlight />
+        <PriceGroup title={t("Platform · månedligt")} items={PRICES.platform} highlight />
+        <PriceGroup title={t("Ekstra services")} items={PRICES.addons} />
+        <PriceGroup title={t("AI-receptionist")} items={PRICES.ai} />
       </div>
     </div>
+
+    {/* Partnere: 50 % af salg og abonnement */}
+    <div className="mt-5 flex flex-col items-start gap-4 rounded-[28px] border border-white/8 bg-gradient-to-r from-ink-900 to-ember-500/10 p-6 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex items-center gap-4">
+        <span className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-ember-500/15 text-2xl">🤝</span>
+        <div>
+          <p className="font-semibold">{t("Sælg AIbooking som partner")}</p>
+          <p className="mt-0.5 text-sm text-ink-400">
+            {t("Du får {pct} % af salget – og {pct} % af abonnementet hver måned ({amount} pr. kunde / md.).", { pct: PARTNER_SHARE * 100, amount: eur(PLATFORM_MONTHLY * PARTNER_SHARE) })}
+          </p>
+        </div>
+      </div>
+      <Link href="/partner" className="btn-secondary shrink-0 !py-2.5">{t("Se partner-portalen →")}</Link>
+    </div>
+    </>
   );
 }
 
@@ -51,6 +72,7 @@ function PriceGroup({ title, items, highlight }: { title: string; items: PriceIt
               <p className="mt-0.5 text-sm text-ink-400">{t(i.text)}</p>
             </div>
             <p className="shrink-0 text-right">
+              {i.from && <span className="block text-xs text-ink-400">{t("fra")}</span>}
               <span className="font-display text-2xl font-semibold">{eur(i.price)}</span>
               {i.unit && <span className="block text-xs text-ink-400">{t("pr. {unit}", { unit: i.unit })}</span>}
             </p>

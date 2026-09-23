@@ -82,7 +82,7 @@ export const OFFERINGS: Offering[] = [
     text: "Har restauranten ingen hjemmeside – eller en gammel? Vi leverer en simpel, mobilvenlig side med menu, bestilling, bordbooking og AI-receptionist indbygget.",
     bullets: ["Eget design og domæne", "Menu, åbningstider og kort", "Bestilling og booking indbygget", "Klar på få dage"],
     cta: "Se eksempler",
-    price: "200 € inkl. menukort",
+    price: "Fra 200 € + ekstra services",
   },
 ];
 
@@ -288,18 +288,28 @@ export interface PriceItem {
   name: string;
   price: number;
   unit?: string;
+  /** Vis som "fra"-pris */
+  from?: boolean;
   text: string;
 }
 
-export const PRICES: { base: PriceItem[]; addons: PriceItem[]; ai: PriceItem[] } = {
+/** Månedligt platform-abonnement og partnerens andel af salg + abonnement. */
+export const PLATFORM_MONTHLY = 50;
+export const PARTNER_SHARE = 0.5;
+
+export const PRICES: { base: PriceItem[]; platform: PriceItem[]; addons: PriceItem[]; ai: PriceItem[] } = {
   base: [
     {
       key: "hjemmeside",
       emoji: "🌐",
       name: "Standard hjemmeside med menukort",
       price: 200,
-      text: "Mobilvenlig restaurant-hjemmeside i jeres design med online menukort, åbningstider og kontakt.",
+      from: true,
+      text: "Mobilvenlig restaurant-hjemmeside i jeres design med online menukort, åbningstider og kontakt – plus ekstra services efter behov.",
     },
+  ],
+  platform: [
+    { key: "platform", emoji: "🧩", name: "AIbooking-platform", price: PLATFORM_MONTHLY, unit: "md.", text: "Login, ordersystem, bordbooking, QR/NFC-styring, AI-opsætning, opdateringer og support." },
   ],
   addons: [
     { key: "qr", emoji: "🔳", name: "QR-kode til print", price: 30, unit: "stk.", text: "QR-kode til menukortet på hjemmesiden – klar til at printe på borde, skilte og flyers." },
