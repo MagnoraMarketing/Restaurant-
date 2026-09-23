@@ -8,6 +8,8 @@ import { ReceptionistChat } from "./ReceptionistChat";
 import { OPEN_EVENT, type OpenDetail } from "./events";
 import { useT } from "@/components/i18n/I18nProvider";
 
+const SCRIPT_ID = "aibooking-widget-script";
+
 declare global {
   interface Window {
     AIbookingConfig?: Record<string, unknown>;
@@ -40,9 +42,10 @@ export function iframeSrc(url: string, r: Restaurant, agentId: string) {
 /**
  * Flydende AI-receptionist (nederst til højre). Konfigureres pr. restaurant
  * (restaurant.widget: agent-id'er, tema, velkomst, position, enabled).
- *  - NEXT_PUBLIC_AIBOOKING_WIDGET_URL = *.js → AIbooking-scriptet indlæses med data-attributter.
+ *  - NEXT_PUBLIC_AIBOOKING_WIDGET_URL = *.js → AIbooking-scriptet indlæses med data-attributter
+ *    (data-widget-id fra NEXT_PUBLIC_AIBOOKING_WIDGET_ID). Standard er AIbooking test-widget'en.
  *  - NEXT_PUBLIC_AIBOOKING_WIDGET_URL = anden URL → vises som iframe i panelet.
- *  - Ikke konfigureret → indbygget demo-receptionist (chat + voice i browseren).
+ *  - Sat til tom streng → indbygget demo-receptionist (chat + voice i browseren).
  */
 export function AIbookingWidget({ restaurant, menu }: { restaurant: Restaurant; menu: Menu }) {
   const t = useT();
@@ -50,14 +53,16 @@ export function AIbookingWidget({ restaurant, menu }: { restaurant: Restaurant; 
   const [autoStart, setAutoStart] = useState<string | undefined>();
   const [autoVoice, setAutoVoice] = useState(false);
   const [session, setSession] = useState(0);
+  const [hint, setHint] = useState(false);
   const ext = useExternalWidget(restaurant);
   const accent = restaurant.widget.accentColor;
   const left = restaurant.widget.position === "bottom-left";
 
-  // Indlæs rigtig AIbooking-widget-script
+  // Indlæs rigtig AIbooking-widget-script (kun én gang pr. side – scriptet tegner selv sin knap)
   useEffect(() => {
     if (ext.mode !== "script" || !restaurant.widget.enabled) return;
     window.AIbookingConfig = {
+      widgetId: publicConfig.widgetId || undefined,
       agentId: ext.agentId,
       voiceAgentId: restaurant.widget.voiceAgentId,
       restaurantId: restaurant.id,
@@ -68,24 +73,25 @@ export function AIbookingWidget({ restaurant, menu }: { restaurant: Restaurant; 
       position: restaurant.widget.position,
       language: "da",
     };
+    if (document.getElementById(SCRIPT_ID)) return;
     const s = document.createElement("script");
+    s.id = SCRIPT_ID;
     s.src = ext.url;
     s.async = true;
-    s.dataset.agentId = ext.agentId;
+    if (publicConfig.widgetId) s.dataset.widgetId = publicConfig.widgetId;
+    if (ext.agentId) s.dataset.agentId = ext.agentId;
     s.dataset.restaurantId = restaurant.id;
     if (publicConfig.apiUrl) s.dataset.apiUrl = publicConfig.apiUrl;
     document.body.appendChild(s);
-    return () => {
-      s.remove();
-    };
   }, [ext.mode, ext.url, ext.agentId, restaurant, accent]);
 
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent<OpenDetail>).detail ?? {};
       const msg = detail.message;
-      if (ext.mode === "script" && window.AIbooking?.open) {
-        window.AIbooking.open({ message: msg });
+      if (ext.mode === "script") {
+        if (window.AIbooking?.open) window.AIbooking.open({ message: msg });
+        else setHint(true);
         return;
       }
       setAutoStart(msg);
@@ -97,7 +103,41 @@ export function AIbookingWidget({ restaurant, menu }: { restaurant: Restaurant; 
     return () => window.removeEventListener(OPEN_EVENT, handler);
   }, [ext.mode]);
 
-  if (!restaurant.widget.enabled || ext.mode === "script") return null;
+  // Vis kort en "prøv mig"-boble ved test-widget'en, så man ser hvor den er
+  useEffect(() => {
+    if (ext.mode !== "script" || !restaurant.widget.enabled) return;
+    const show = setTimeout(() => setHint(true), 2500);
+    return () => clearTimeout(show);
+  }, [ext.mode, restaurant.widget.enabled]);
+  useEffect(() => {
+    if (!hint) return;
+    const hide = setTimeout(() => setHint(false), 9000);
+    return () => clearTimeout(hide);
+  }, [hint]);
+
+  if (!restaurant.widget.enabled) return null;
+  if (ext.mode === "script")
+    return hint ? (
+      <div
+        role="status"
+        className={`pointer-events-auto fixed bottom-24 z-[60] w-[min(18rem,calc(100vw-2rem))] animate-pop ${left ? "left-4 sm:left-6" : "right-4 sm:right-6"}`}
+        style={{ ["--accent" as string]: accent }}
+      >
+        <div className="relative rounded-2xl border border-white/10 bg-ink-900/95 p-4 pr-9 shadow-2xl shadow-black/50 backdrop-blur-xl">
+          <button onClick={() => setHint(false)} aria-label={t("Luk")} className="absolute top-3 right-3 text-ink-400 hover:text-white">
+            <Icon name="close" className="h-4 w-4" />
+          </button>
+          <p className="flex items-center gap-2 text-[11px] font-bold tracking-wide uppercase" style={{ color: accent }}>
+            <span className="h-1.5 w-1.5 animate-pulse rounded-full" style={{ background: accent }} /> {t("Live test")}
+          </p>
+          <p className="mt-1.5 text-sm font-semibold">{t("Prøv AI-receptionisten her")}</p>
+          <p className="mt-1 text-xs text-ink-300">{t("Klik på knappen nedenfor – book bord, bestil mad eller stil et spørgsmål.")}</p>
+          <span
+            className={`absolute -bottom-1.5 h-3 w-3 rotate-45 border-r border-b border-white/10 bg-ink-900 ${left ? "left-8" : "right-8"}`}
+          />
+        </div>
+      </div>
+    ) : null;
 
   return (
     <div className={`fixed bottom-4 z-50 ${left ? "left-4" : "right-4"} sm:bottom-6 ${left ? "sm:left-6" : "sm:right-6"}`}>
