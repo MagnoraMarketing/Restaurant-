@@ -36,6 +36,17 @@
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-8px); }
   }
+  --animate-wave: wave 1.1s ease-in-out infinite;
+  --animate-slide-in: slide-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+
+  @keyframes wave {
+    0%, 100% { transform: scaleY(0.35); }
+    50% { transform: scaleY(1); }
+  }
+  @keyframes slide-in {
+    from { opacity: 0; transform: translateX(24px); }
+    to { opacity: 1; transform: none; }
+  }
   @keyframes pulse-ring {
     0% { box-shadow: 0 0 0 0 color-mix(in oklab, var(--accent, #f06a3a) 55%, transparent); }
     100% { box-shadow: 0 0 0 18px transparent; }
@@ -126,5 +137,16 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  body {
+    background: white;
+  }
+  aside,
+  header,
+  .print\:hidden {
+    display: none !important;
   }
 }

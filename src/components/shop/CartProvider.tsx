@@ -25,6 +25,9 @@ interface CartCtx {
   clear(): void;
   drawerOpen: boolean;
   setDrawerOpen(v: boolean): void;
+  /** Sat når gæsten har scannet QR-koden / NFC-chippen på et bord. */
+  tableNumber: string | null;
+  setTableNumber(v: string | null): void;
 }
 
 const Ctx = createContext<CartCtx | null>(null);
@@ -34,6 +37,29 @@ export function CartProvider({ restaurant, menu, children }: { restaurant: Resta
   const [lines, setLines] = useState<CartLine[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [hydrated, setHydrated] = useState(false);
+  const [tableNumber, setTable] = useState<string | null>(null);
+  const tableKey = `aibooking-table:${restaurant.id}`;
+
+  useEffect(() => {
+    try {
+      setTable(sessionStorage.getItem(tableKey));
+    } catch {
+      /* ignore */
+    }
+  }, [tableKey]);
+
+  const setTableNumber = useCallback(
+    (v: string | null) => {
+      setTable(v);
+      try {
+        if (v) sessionStorage.setItem(tableKey, v);
+        else sessionStorage.removeItem(tableKey);
+      } catch {
+        /* ignore */
+      }
+    },
+    [tableKey],
+  );
 
   useEffect(() => {
     try {
@@ -85,6 +111,8 @@ export function CartProvider({ restaurant, menu, children }: { restaurant: Resta
     clear: () => setLines([]),
     drawerOpen,
     setDrawerOpen,
+    tableNumber: restaurant.tableOrdering.enabled ? tableNumber : null,
+    setTableNumber,
   };
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

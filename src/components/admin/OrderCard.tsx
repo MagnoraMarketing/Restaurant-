@@ -60,10 +60,10 @@ export function OrderCard({ order, onChange }: { order: Order; onChange: (o: Ord
       </div>
       <dl className="mt-3 space-y-1 rounded-xl bg-ink-850 p-3 text-xs">
         <div className="flex justify-between gap-2"><dt className="text-ink-400">Kunde</dt><dd className="text-right font-medium">{order.customer.name}</dd></div>
-        <div className="flex justify-between gap-2"><dt className="text-ink-400">Telefon</dt><dd className="text-right font-medium">{order.customer.phone}</dd></div>
+        {order.customer.phone && <div className="flex justify-between gap-2"><dt className="text-ink-400">Telefon</dt><dd className="text-right font-medium">{order.customer.phone}</dd></div>}
         <div className="flex justify-between gap-2">
-          <dt className="text-ink-400">{order.fulfillment === "delivery" ? "🛵 Levering" : "🛍️ Afhentning"}</dt>
-          <dd className="text-right font-medium">{order.fulfillment === "delivery" ? `${order.customer.address ?? ""} ${order.customer.postalCode ?? ""}` : ""}</dd>
+          <dt className="text-ink-400">{order.fulfillment === "delivery" ? "🛵 Levering" : order.fulfillment === "table" ? "🪑 Ved bordet" : "🛍️ Afhentning"}</dt>
+          <dd className="text-right font-medium">{order.fulfillment === "delivery" ? `${order.customer.address ?? ""} ${order.customer.postalCode ?? ""}` : order.fulfillment === "table" ? `Bord ${order.tableNumber}` : ""}</dd>
         </div>
         <div className="flex justify-between gap-2"><dt className="text-ink-400">Betaling</dt><dd className="text-right">{PAYMENT[order.paymentStatus]}</dd></div>
         {order.note && <div className="pt-1 text-ink-300 italic">“{order.note}”</div>}

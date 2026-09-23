@@ -55,6 +55,8 @@ export interface Restaurant {
     estimatedMinutes: number;
   };
   pickup: { enabled: boolean; estimatedMinutes: number };
+  /** Bestilling ved bordet via QR-kode / NFC-chip på bordet. */
+  tableOrdering: { enabled: boolean; tables: number };
   booking: {
     enabled: boolean;
     maxPartySize: number;
@@ -66,6 +68,8 @@ export interface Restaurant {
   paymentMethods: PaymentMethod[];
   faq: FaqEntry[];
   widget: WidgetConfig;
+  /** Hvor NFC-anmeldelseschippen sender gæsten hen (fx Google-anmeldelse). Styres i admin. */
+  reviewUrl?: string;
 }
 
 export type PaymentMethod = "card" | "mobilepay" | "cash_on_pickup" | "invoice";
@@ -114,7 +118,7 @@ export interface Menu {
 }
 
 export type OrderSource = "website" | "chat" | "voice" | "phone" | "shopify" | "pos" | "api";
-export type FulfillmentType = "delivery" | "pickup";
+export type FulfillmentType = "delivery" | "pickup" | "table";
 export type OrderStatus = "new" | "accepted" | "rejected" | "ready" | "completed";
 export type PaymentStatus = "unpaid" | "pending" | "paid" | "pay_on_pickup" | "refunded";
 
@@ -163,6 +167,8 @@ export interface Order {
   paymentStatus: PaymentStatus;
   note?: string;
   requestedTime?: string;
+  /** Bordnummer ved QR/NFC-bestilling i restauranten. */
+  tableNumber?: string;
   externalRefs: Record<string, string>;
   createdAt: string;
   updatedAt: string;
@@ -227,6 +233,7 @@ export interface CreateOrderInput {
   paymentMethod?: PaymentMethod;
   note?: string;
   requestedTime?: string;
+  tableNumber?: string;
   externalRefs?: Record<string, string>;
 }
 
@@ -238,4 +245,21 @@ export interface CreateBookingInput {
   partySize: number;
   customer: CustomerInfo;
   comment?: string;
+}
+
+export type CallOutcome = "order" | "booking" | "question" | "transfer" | "missed";
+
+/** Indgående opkald håndteret af AI-receptionisten (AIbooking Voice). */
+export interface Call {
+  id: string;
+  restaurantId: string;
+  from: string;
+  channel: "phone" | "voice_widget";
+  startedAt: string;
+  durationSec: number;
+  outcome: CallOutcome;
+  summary: string;
+  transcript: { who: "customer" | "ai"; text: string }[];
+  orderId?: string;
+  bookingId?: string;
 }

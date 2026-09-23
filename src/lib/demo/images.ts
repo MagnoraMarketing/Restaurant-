@@ -66,3 +66,17 @@ export const IMAGES = {
   brunch: img("photo-1533089860892-a7c6f0a88666"),
   cake: img("photo-1578985545062-69928b1d9587"),
 };
+
+// Ekstra billeder til branchesider
+export const TYPE_IMAGES = {
+  bar: img("photo-1514933651103-005eec06c04b", 1600),
+  cocktail: img("photo-1470337458703-46ad1756a187", 1600),
+  bakery: img("photo-1509440159596-0249088772ff", 1600),
+  kebab: img("photo-1529006557810-274b9b2fc783", 1600),
+  asian: img("photo-1552611052-33e04de081de", 1600),
+  catering: img("photo-1555244162-803834f70033", 1600),
+  phoneCall: img("photo-1556740738-b6a63e27c4df", 1400),
+  qrTable: img("photo-1592861956120-e524fc739696", 1400),
+  website: img("photo-1460925895917-afdab827c52f", 1400),
+  kitchen: img("photo-1556910103-1c02745aae4d", 1400),
+};

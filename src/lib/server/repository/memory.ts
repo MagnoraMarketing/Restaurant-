@@ -1,4 +1,4 @@
-import type { Booking, Customer, Menu, Order, Restaurant } from "@/lib/types";
+import type { Booking, Call, Customer, Menu, Order, Restaurant } from "@/lib/types";
 import { DEMO_RESTAURANTS } from "@/lib/demo/restaurants";
 import { DEMO_MENUS } from "@/lib/demo/menus";
 import { buildOrderItem } from "@/lib/pricing";
@@ -13,6 +13,7 @@ interface Store {
   menus: Record<string, Menu>;
   orders: Order[];
   bookings: Booking[];
+  calls: Call[];
   webhooks: WebhookLogEntry[];
   counters: Record<string, number>;
 }
@@ -151,11 +152,56 @@ function seed(): Store {
     mkBooking(5, 3, "18:00", 14, "Firma ApS – julefrokost", "phone", "pending", "Selskabsmenu, 1 vegetar"),
   ];
 
+  const mkCall = (i: number, ago: number, durationSec: number, outcome: Call["outcome"], summary: string, transcript: [("customer" | "ai"), string][], extra: Partial<Call> = {}): Call => ({
+    id: `call_demo_${i}`,
+    restaurantId: "rest_bella_napoli",
+    from: `+45 ${20 + i}XX XX XX`,
+    channel: i % 3 === 0 ? "voice_widget" : "phone",
+    startedAt: minutesAgo(ago),
+    durationSec,
+    outcome,
+    summary,
+    transcript: transcript.map(([who, text]) => ({ who, text })),
+    ...extra,
+  });
+  const calls: Call[] = [
+    mkCall(1, 3, 94, "order", "Bestilte 2 × Pepperoni (+ ekstra ost) og 1 × Cola til levering – ordre #1048.", [
+      ["ai", "Bella Napoli, du taler med AI-receptionisten. Hvad kan jeg hjælpe med?"],
+      ["customer", "Hej, jeg vil gerne bestille to pepperoni med ekstra ost og en cola."],
+      ["ai", "Det klarer jeg. Skal det leveres eller hentes?"],
+      ["customer", "Leveret til Istedgade 12."],
+      ["ai", "Perfekt. Ordren er sendt til køkkenet og er hos dig om ca. 40 minutter."],
+    ], { orderId: "ord_demo_1048" }),
+    mkCall(2, 18, 61, "booking", "Bord til 4 personer i dag kl. 18:30 (Jonas Berg).", [
+      ["customer", "Har I et bord til fire i aften?"],
+      ["ai", "Ja, jeg kan tilbyde kl. 18:30 eller 20:00. Hvad passer bedst?"],
+      ["customer", "Halv syv."],
+      ["ai", "Så er bordet booket til 4 personer kl. 18:30. Du får en SMS-bekræftelse."],
+    ], { bookingId: "bk_demo_1" }),
+    mkCall(3, 35, 28, "question", "Spurgte om glutenfri pizzabund – svaret ja (+20 kr.).", [
+      ["customer", "Har I glutenfri pizza?"],
+      ["ai", "Ja, alle pizzaer kan fås med glutenfri bund for 20 kr. ekstra."],
+    ]),
+    mkCall(4, 52, 45, "transfer", "Leverandør ville tale med køkkenchefen – viderestillet.", [
+      ["customer", "Det er fra Hørkram, jeg skal tale med køkkenchefen om en levering."],
+      ["ai", "Jeg stiller dig om til køkkenet med det samme."],
+    ]),
+    mkCall(5, 77, 70, "order", "Takeaway: 2 × Bacon BBQ Burger menu + mozzarella sticks – ordre #1046.", [
+      ["customer", "To bacon burgere som menu og nogle mozzarella sticks, jeg henter selv."],
+      ["ai", "Noteret – det er klar om 20 minutter. Må jeg få dit navn?"],
+    ], { orderId: "ord_demo_1046" }),
+    mkCall(6, 96, 33, "question", "Spurgte om åbningstider søndag og parkering.", [
+      ["customer", "Hvornår har I åbent på søndag, og kan man parkere?"],
+      ["ai", "Søndag har vi åbent 12–21. Der er gadeparkering og P-hus Vesterport tæt på."],
+    ]),
+  ];
+
   return {
     restaurants,
     menus,
     orders,
     bookings,
+    calls,
     webhooks: [],
     counters: { rest_bella_napoli: 1048 },
   };
@@ -271,6 +317,16 @@ export const memoryRepository: Repository = {
       touch(b.customer.name, b.customer.phone, b.customer.email, b.createdAt).bookingCount++;
     }
     return [...map.values()].sort((a, b) => b.lastSeenAt.localeCompare(a.lastSeenAt));
+  },
+
+  async listCalls(restaurantId, limit = 100) {
+    return clone(store().calls.filter((c) => c.restaurantId === restaurantId).sort((a, b) => b.startedAt.localeCompare(a.startedAt)).slice(0, limit));
+  },
+  async insertCall(call) {
+    const s = store();
+    s.calls.push(clone(call));
+    if (s.calls.length > 2000) s.calls.splice(0, s.calls.length - 2000);
+    return clone(call);
   },
 
   async logWebhook(entry) {

@@ -1,5 +1,7 @@
 import type {
   Booking,
+  Call,
+  CallOutcome,
   BookingStatus,
   CreateBookingInput,
   CreateOrderInput,
@@ -46,7 +48,7 @@ function parseCustomer(raw: unknown, fulfillment?: FulfillmentType): CustomerInf
   };
   const errors: string[] = [];
   if (customer.name.length < 2) errors.push("customer.name er påkrævet");
-  if (customer.phone.replace(/\D/g, "").length < 8) errors.push("customer.phone skal være et gyldigt telefonnummer");
+  if (fulfillment !== "table" && customer.phone.replace(/\D/g, "").length < 8) errors.push("customer.phone skal være et gyldigt telefonnummer");
   if (customer.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customer.email)) errors.push("customer.email er ugyldig");
   if (fulfillment === "delivery" && !customer.address) errors.push("customer.address er påkrævet ved levering");
   if (errors.length) throw new ApiError(422, "Ugyldige kundeoplysninger", errors);
@@ -99,7 +101,13 @@ function resolveOptionRefs(product: Product, refs: string[]): string[] {
 
 export async function createOrder(raw: CreateOrderInput, opts: { trusted?: boolean; paymentStatus?: PaymentStatus } = {}): Promise<Order> {
   const restaurant = await resolveRestaurant(raw.restaurantId);
-  const fulfillment: FulfillmentType = raw.fulfillment === "delivery" ? "delivery" : "pickup";
+  const fulfillment: FulfillmentType = raw.fulfillment === "delivery" ? "delivery" : raw.fulfillment === "table" ? "table" : "pickup";
+  const tableNumber = str(raw.tableNumber, 10);
+  if (fulfillment === "table") {
+    if (!restaurant.tableOrdering.enabled) throw new ApiError(422, `${restaurant.name} tager ikke imod bestillinger ved bordet`);
+    const n = Number(tableNumber);
+    if (!Number.isInteger(n) || n < 1 || n > restaurant.tableOrdering.tables) throw new ApiError(422, "Ugyldigt bordnummer");
+  }
   if (fulfillment === "delivery" && !restaurant.delivery.enabled)
     throw new ApiError(422, `${restaurant.name} tilbyder ikke levering – vælg afhentning`);
   if (fulfillment === "pickup" && !restaurant.pickup.enabled)
@@ -164,6 +172,7 @@ export async function createOrder(raw: CreateOrderInput, opts: { trusted?: boole
     paymentStatus,
     note: str(raw.note, 500) || undefined,
     requestedTime: str(raw.requestedTime, 40) || undefined,
+    tableNumber: fulfillment === "table" ? tableNumber : undefined,
     externalRefs: opts.trusted && raw.externalRefs ? raw.externalRefs : {},
     createdAt: now,
     updatedAt: now,
@@ -268,4 +277,30 @@ export async function updateBooking(id: string, patch: Record<string, unknown>):
   }
   if (patch.comment !== undefined) next.comment = str(patch.comment, 500);
   return (await repo().updateBooking(id, next))!;
+}
+
+const OUTCOMES: CallOutcome[] = ["order", "booking", "question", "transfer", "missed"];
+
+/** Gemmer et afsluttet opkald/voice-samtale fra AIbooking Voice (webhook: call.completed). */
+export async function recordCall(raw: Record<string, unknown>): Promise<Call> {
+  const restaurant = await resolveRestaurant(raw.restaurantId);
+  const transcript = Array.isArray(raw.transcript)
+    ? (raw.transcript as { who?: string; text?: string }[]).slice(0, 200).map((t) => ({
+        who: t.who === "customer" ? ("customer" as const) : ("ai" as const),
+        text: str(t.text, 1000),
+      }))
+    : [];
+  return repo().insertCall({
+    id: crypto.randomUUID(),
+    restaurantId: restaurant.id,
+    from: str(raw.from, 40),
+    channel: raw.channel === "voice_widget" ? "voice_widget" : "phone",
+    startedAt: typeof raw.startedAt === "string" && !Number.isNaN(Date.parse(raw.startedAt)) ? raw.startedAt : new Date().toISOString(),
+    durationSec: Math.max(0, Math.round(Number(raw.durationSec) || 0)),
+    outcome: OUTCOMES.includes(raw.outcome as CallOutcome) ? (raw.outcome as CallOutcome) : "question",
+    summary: str(raw.summary, 500),
+    transcript,
+    orderId: str(raw.orderId, 80) || undefined,
+    bookingId: str(raw.bookingId, 80) || undefined,
+  });
 }

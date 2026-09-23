@@ -9,10 +9,12 @@ import { useAdmin } from "./AdminContext";
 
 const NAV: { href: string; label: string; icon: IconName }[] = [
   { href: "/admin", label: "Dashboard", icon: "grid" },
+  { href: "/admin/opkald", label: "Opkald & voice", icon: "phone" },
   { href: "/admin/ordrer", label: "Ordrer", icon: "bag" },
   { href: "/admin/reservationer", label: "Reservationer", icon: "calendar" },
   { href: "/admin/menu", label: "Menu", icon: "list" },
   { href: "/admin/produkter", label: "Produkter", icon: "store" },
+  { href: "/admin/qr-nfc", label: "QR & NFC", icon: "grid" },
   { href: "/admin/kunder", label: "Kunder", icon: "users" },
   { href: "/admin/integrationer", label: "Integrationer", icon: "plug" },
   { href: "/admin/ai-assistent", label: "AI-assistent", icon: "sparkles" },
@@ -96,7 +98,7 @@ export function AdminShell({ demoMode, storage, children }: { demoMode: boolean;
           </div>
         )}
         {demoMode && (
-          <div className="border-b border-ember-500/20 bg-ember-500/10 px-4 py-2 text-center text-xs text-ember-300 sm:px-8">
+          <div className="border-b border-ember-500/20 bg-ember-500/10 px-4 py-2 text-center text-xs text-ember-300 sm:px-8 print:hidden">
             Offentlig admin-demo – data er fiktive og nulstilles løbende. Lav en ordre via{" "}
             <Link href={`/demo/${restaurant?.slug ?? ""}`} className="font-semibold underline">
               restaurantens hjemmeside

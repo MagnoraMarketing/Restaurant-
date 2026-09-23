@@ -7,6 +7,8 @@ import { CartButton, CartDrawer } from "@/components/shop/CartDrawer";
 import { AIbookingWidget } from "@/components/widget/AIbookingWidget";
 import { groupedHours } from "@/lib/hours";
 import { telHref } from "@/lib/format";
+import { Suspense } from "react";
+import { TableBanner } from "./TableBanner";
 
 /**
  * Restaurantens egen hjemmeside (eget brand, egne farver). AIbooking ligger kun
@@ -42,6 +44,9 @@ export function RestaurantShell({ restaurant, menu, children }: { restaurant: Re
             <CartButton />
           </div>
         </header>
+        <Suspense>
+          <TableBanner />
+        </Suspense>
         <main>{children}</main>
         <footer id="info" className="mt-20 border-t border-white/8 bg-ink-900/60">
           <div className="container-x grid gap-8 py-12 sm:grid-cols-3">

@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import type { Restaurant } from "@/lib/types";
-import { handler, json, readJson, requireAdmin } from "@/lib/server/http";
+import { ApiError, handler, json, readJson, requireAdmin } from "@/lib/server/http";
 import { resolveRestaurant } from "@/lib/server/services";
 import { repo } from "@/lib/server/repository";
 import { toPublicRestaurant } from "@/lib/server/public";
@@ -16,7 +16,7 @@ export const GET = handler(async (_req: NextRequest, ctx: RouteContext<"/api/res
 
 const EDITABLE: (keyof Restaurant)[] = [
   "name", "tagline", "description", "address", "city", "phone", "email", "parking",
-  "openingHours", "delivery", "pickup", "booking", "paymentMethods", "faq", "widget", "accentColor",
+  "openingHours", "delivery", "pickup", "tableOrdering", "booking", "paymentMethods", "faq", "widget", "accentColor", "reviewUrl",
 ];
 
 /** PATCH /api/restaurants/:id (admin) – AI-receptionistens konfiguration pr. restaurant. */
@@ -26,6 +26,8 @@ export const PATCH = handler(async (req: NextRequest, ctx: RouteContext<"/api/re
   const restaurant = await resolveRestaurant(id);
   const body = await readJson<Partial<Restaurant>>(req);
   const patch = Object.fromEntries(Object.entries(body).filter(([k]) => EDITABLE.includes(k as keyof Restaurant))) as Partial<Restaurant>;
+  if (patch.reviewUrl !== undefined && patch.reviewUrl !== "" && !/^https:\/\//.test(String(patch.reviewUrl)))
+    throw new ApiError(422, "reviewUrl skal være en https://-adresse");
   if (patch.widget) patch.widget = { ...restaurant.widget, ...patch.widget, restaurantId: restaurant.id };
   return json({ data: await repo().updateRestaurant(restaurant.id, patch) });
 });

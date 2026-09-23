@@ -12,6 +12,7 @@ export const POST = handler(async (req: NextRequest) => {
     phone: String(body.phone ?? "").slice(0, 40),
     type: String(body.type ?? "").slice(0, 40),
     message: String(body.message ?? "").slice(0, 1000),
+    services: String(body.services ?? "").slice(0, 1000),
   };
   if (lead.name.length < 2 || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(lead.email)) throw new ApiError(422, "Navn og gyldig e-mail er påkrævet");
   const url = process.env.LEADS_WEBHOOK_URL;

@@ -25,6 +25,7 @@ create table if not exists restaurants (
   phone           text not null default '',
   email           text not null default '',
   parking         text not null default '',
+  review_url      text not null default '',             -- mål for NFC-anmeldelseschip (/r/<slug>)
   active          boolean not null default true,
   order_counter   integer not null default 1000,
   created_at      timestamptz not null default now(),
@@ -36,6 +37,7 @@ create table if not exists restaurant_settings (
   opening_hours   jsonb not null default '[]'::jsonb,   -- [{day,open,close,closed}]
   delivery        jsonb not null default '{"enabled":false,"fee":0,"minimumOrder":0,"areas":[],"estimatedMinutes":45}'::jsonb,
   pickup          jsonb not null default '{"enabled":true,"estimatedMinutes":20}'::jsonb,
+  table_ordering  jsonb not null default '{"enabled":false,"tables":0}'::jsonb,  -- QR/NFC-bestilling ved bordet
   booking         jsonb not null default '{"enabled":true,"maxPartySize":20,"largePartyThreshold":8,"slotMinutes":30,"durationMinutes":120,"rules":""}'::jsonb,
   payment_methods text[] not null default array['card','mobilepay']::text[],
   faq             jsonb not null default '[]'::jsonb,   -- [{question,answer,keywords}]
@@ -126,7 +128,8 @@ create table if not exists orders (
                   check (source in ('website','chat','voice','phone','shopify','pos','api')),
   status          text not null default 'new'
                   check (status in ('new','accepted','rejected','ready','completed')),
-  fulfillment     text not null check (fulfillment in ('delivery','pickup')),
+  fulfillment     text not null check (fulfillment in ('delivery','pickup','table')),
+  table_number    text,                                 -- ved QR/NFC-bestilling
   customer        jsonb not null,                       -- snapshot: {name,phone,email,address,postalCode,city}
   subtotal        numeric(10,2) not null,
   delivery_fee    numeric(10,2) not null default 0,
@@ -215,6 +218,22 @@ create table if not exists ai_agents (
   updated_at      timestamptz not null default now()
 );
 
+-- Indgående opkald / voice-samtaler håndteret af AI-receptionisten
+create table if not exists calls (
+  id              uuid primary key default gen_random_uuid(),
+  restaurant_id   uuid not null references restaurants(id) on delete cascade,
+  from_number     text not null default '',
+  channel         text not null default 'phone' check (channel in ('phone','voice_widget')),
+  started_at      timestamptz not null default now(),
+  duration_sec    integer not null default 0,
+  outcome         text not null check (outcome in ('order','booking','question','transfer','missed')),
+  summary         text not null default '',
+  transcript      jsonb not null default '[]'::jsonb,   -- [{who,text}]
+  order_id        uuid references orders(id) on delete set null,
+  booking_id      uuid references bookings(id) on delete set null
+);
+create index if not exists calls_restaurant_idx on calls(restaurant_id, started_at desc);
+
 create table if not exists webhooks (
   id              uuid primary key default gen_random_uuid(),
   restaurant_id   uuid references restaurants(id) on delete cascade,
@@ -263,7 +282,7 @@ do $$
 declare t text;
 begin
   foreach t in array array['restaurant_settings','categories','products','modifiers','customers','orders',
-                           'order_items','bookings','integrations','ai_agents','webhooks']
+                           'order_items','bookings','integrations','ai_agents','webhooks','calls']
   loop
     execute format('alter table %I enable row level security', t);
     execute format('drop policy if exists tenant_isolation on %I', t);

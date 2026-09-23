@@ -1,6 +1,7 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import type {
   Booking,
+  Call,
   Category,
   Customer,
   Menu,
@@ -55,9 +56,11 @@ function toRestaurant(r: Row): Restaurant {
     openingHours: s.opening_hours ?? [],
     delivery: s.delivery ?? { enabled: false, fee: 0, minimumOrder: 0, areas: [], estimatedMinutes: 45 },
     pickup: s.pickup ?? { enabled: true, estimatedMinutes: 20 },
+    tableOrdering: s.table_ordering ?? { enabled: false, tables: 0 },
     booking: s.booking ?? { enabled: false, maxPartySize: 0, largePartyThreshold: 0, slotMinutes: 30, durationMinutes: 120, rules: "" },
     paymentMethods: s.payment_methods ?? ["card"],
     faq: s.faq ?? [],
+    reviewUrl: r.review_url || undefined,
     widget: {
       restaurantId: r.id,
       agentId: a.agent_id ?? undefined,
@@ -104,6 +107,7 @@ function toOrder(r: Row): Order {
     paymentStatus: r.payment_status,
     note: r.note ?? undefined,
     requestedTime: r.requested_time ?? undefined,
+    tableNumber: r.table_number ?? undefined,
     externalRefs: r.external_refs ?? {},
     createdAt: r.created_at,
     updatedAt: r.updated_at,
@@ -189,7 +193,7 @@ export const supabaseRepository: Repository = {
     const map: [keyof Restaurant, string][] = [
       ["name", "name"], ["tagline", "tagline"], ["description", "description"], ["address", "address"],
       ["city", "city"], ["phone", "phone"], ["email", "email"], ["parking", "parking"], ["accentColor", "accent_color"],
-      ["heroImage", "hero_image"], ["emoji", "emoji"],
+      ["heroImage", "hero_image"], ["emoji", "emoji"], ["reviewUrl", "review_url"],
     ];
     for (const [k, col] of map) if (p[k] !== undefined) base[col] = p[k];
     if (Object.keys(base).length) check(await db().from("restaurants").update(base).eq("id", id));
@@ -198,6 +202,7 @@ export const supabaseRepository: Repository = {
     if (p.openingHours) settings.opening_hours = p.openingHours;
     if (p.delivery) settings.delivery = p.delivery;
     if (p.pickup) settings.pickup = p.pickup;
+    if (p.tableOrdering) settings.table_ordering = p.tableOrdering;
     if (p.booking) settings.booking = p.booking;
     if (p.paymentMethods) settings.payment_methods = p.paymentMethods;
     if (p.faq) settings.faq = p.faq;
@@ -286,7 +291,9 @@ export const supabaseRepository: Repository = {
 
   async insertOrder(order) {
     const orderNumber = check(await db().rpc("next_order_number", { p_restaurant_id: order.restaurantId })) as number;
-    const customerId = await upsertCustomer(order.restaurantId, order.customer, { orders: 1, spent: order.total });
+    const customerId = order.customer.phone
+      ? await upsertCustomer(order.restaurantId, order.customer, { orders: 1, spent: order.total })
+      : null;
     const row = check(
       await db()
         .from("orders")
@@ -306,6 +313,7 @@ export const supabaseRepository: Repository = {
           payment_status: order.paymentStatus,
           note: order.note ?? null,
           requested_time: order.requestedTime ?? null,
+          table_number: order.tableNumber ?? null,
           external_refs: order.externalRefs,
         })
         .select("id")
@@ -409,6 +417,45 @@ export const supabaseRepository: Repository = {
         lastSeenAt: c.last_seen_at,
       }),
     );
+  },
+
+  async listCalls(restaurantId, limit = 100) {
+    const rows = check(
+      await db().from("calls").select("*").eq("restaurant_id", restaurantId).order("started_at", { ascending: false }).limit(limit),
+    ) as Row[];
+    return rows.map(
+      (c): Call => ({
+        id: c.id,
+        restaurantId: c.restaurant_id,
+        from: c.from_number,
+        channel: c.channel,
+        startedAt: c.started_at,
+        durationSec: c.duration_sec,
+        outcome: c.outcome,
+        summary: c.summary,
+        transcript: c.transcript ?? [],
+        orderId: c.order_id ?? undefined,
+        bookingId: c.booking_id ?? undefined,
+      }),
+    );
+  },
+
+  async insertCall(c) {
+    check(
+      await db().from("calls").insert({
+        restaurant_id: c.restaurantId,
+        from_number: c.from,
+        channel: c.channel,
+        started_at: c.startedAt,
+        duration_sec: c.durationSec,
+        outcome: c.outcome,
+        summary: c.summary,
+        transcript: c.transcript,
+        order_id: UUID.test(c.orderId ?? "") ? c.orderId : null,
+        booking_id: UUID.test(c.bookingId ?? "") ? c.bookingId : null,
+      }),
+    );
+    return c;
   },
 
   async logWebhook(e) {

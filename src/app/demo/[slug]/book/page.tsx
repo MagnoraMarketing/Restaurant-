@@ -103,7 +103,7 @@ export default function BookTablePage() {
       </div>
 
       <form onSubmit={submit} className="mt-8 grid gap-6 lg:grid-cols-[1fr_360px]">
-        <div className="card space-y-7 p-5 sm:p-7">
+        <div className="card min-w-0 space-y-7 p-5 sm:p-7">
           <div>
             <p className="label">Antal personer</p>
             <div className="flex flex-wrap gap-2">

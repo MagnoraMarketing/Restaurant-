@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import type { FulfillmentType, Order, PaymentMethod } from "@/lib/types";
 import { api } from "@/lib/client/api";
 import { kr } from "@/lib/format";
@@ -28,11 +28,14 @@ export default function CheckoutPage() {
 }
 
 function Checkout() {
-  const { restaurant: r, items, subtotal, clear } = useCart();
+  const { restaurant: r, items, subtotal, clear, tableNumber } = useCart();
   const router = useRouter();
   const cancelled = useSearchParams().get("annulleret");
   const [step, setStep] = useState(3); // 1-2 sker i menuen
-  const [fulfillment, setFulfillment] = useState<FulfillmentType>(r.delivery.enabled ? "delivery" : "pickup");
+  const [fulfillment, setFulfillment] = useState<FulfillmentType>(tableNumber ? "table" : r.delivery.enabled ? "delivery" : "pickup");
+  useEffect(() => {
+    if (tableNumber) setFulfillment("table");
+  }, [tableNumber]);
   const [customer, setCustomer] = useState({ name: "", phone: "", email: "", address: "", postalCode: "", city: "" });
   const [note, setNote] = useState("");
   const [payment, setPayment] = useState<PaymentMethod>(r.paymentMethods[0] ?? "cash_on_pickup");
@@ -69,6 +72,7 @@ function Checkout() {
           restaurantId: r.id,
           source: "website",
           fulfillment,
+          tableNumber: fulfillment === "table" ? tableNumber : undefined,
           customer: {
             name: customer.name,
             phone: customer.phone,
@@ -91,7 +95,7 @@ function Checkout() {
   };
 
   const canContinue =
-    step === 3 ? true : step === 4 ? !belowMinimum : step === 5 ? customer.name.trim().length > 1 && customer.phone.replace(/\D/g, "").length >= 8 && (fulfillment === "pickup" || (customer.address.trim() && /^\d{4}$/.test(customer.postalCode) && areaOk)) : true;
+    step === 3 ? true : step === 4 ? !belowMinimum : step === 5 ? customer.name.trim().length > 1 && (fulfillment === "table" || customer.phone.replace(/\D/g, "").length >= 8) && (fulfillment !== "delivery" || (customer.address.trim() && /^\d{4}$/.test(customer.postalCode) && areaOk)) : true;
 
   return (
     <div className="container-x py-10 sm:py-14">
@@ -115,7 +119,7 @@ function Checkout() {
       </ol>
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
-        <div className="card p-5 sm:p-7">
+        <div className="card min-w-0 p-5 sm:p-7">
           {step === 3 && (
             <>
               <h2 className="text-xl font-semibold">Kurv</h2>
@@ -130,6 +134,9 @@ function Checkout() {
             <>
               <h2 className="text-xl font-semibold">Levering eller afhentning</h2>
               <div className="mt-5 grid gap-3 sm:grid-cols-2">
+                {tableNumber && (
+                  <Choice active={fulfillment === "table"} accent={accent} onClick={() => setFulfillment("table")} icon="🪑" title={`Til bord ${tableNumber}`} text="Serveres ved dit bord · bestilt via QR/NFC" />
+                )}
                 {r.delivery.enabled && (
                   <Choice active={fulfillment === "delivery"} accent={accent} onClick={() => setFulfillment("delivery")} icon="🛵" title="Levering" text={`${kr(r.delivery.fee)} · ca. ${r.delivery.estimatedMinutes} min.`} />
                 )}
@@ -151,7 +158,7 @@ function Checkout() {
               <h2 className="text-xl font-semibold">Dine oplysninger</h2>
               <div className="mt-5 grid gap-4 sm:grid-cols-2">
                 <Field label="Navn *"><input className="input" value={customer.name} onChange={set("name")} autoComplete="name" required /></Field>
-                <Field label="Telefon *"><input className="input" value={customer.phone} onChange={set("phone")} autoComplete="tel" type="tel" inputMode="tel" placeholder="12 34 56 78" required /></Field>
+                <Field label={fulfillment === "table" ? "Telefon (valgfri)" : "Telefon *"}><input className="input" value={customer.phone} onChange={set("phone")} autoComplete="tel" type="tel" inputMode="tel" placeholder="12 34 56 78" required /></Field>
                 <Field label="E-mail (kvittering)" className="sm:col-span-2"><input className="input" value={customer.email} onChange={set("email")} autoComplete="email" type="email" /></Field>
                 {fulfillment === "delivery" && (
                   <>
@@ -209,7 +216,7 @@ function Checkout() {
           </ul>
           <div className="mt-4 space-y-1.5 border-t border-white/10 pt-3 text-sm">
             <div className="flex justify-between text-ink-300"><span>Subtotal</span><span>{kr(subtotal)}</span></div>
-            <div className="flex justify-between text-ink-300"><span>{fulfillment === "delivery" ? "Levering" : "Afhentning"}</span><span>{deliveryFee ? kr(deliveryFee) : "Gratis"}</span></div>
+            <div className="flex justify-between text-ink-300"><span>{fulfillment === "delivery" ? "Levering" : fulfillment === "table" ? `Bord ${tableNumber}` : "Afhentning"}</span><span>{deliveryFee ? kr(deliveryFee) : "Gratis"}</span></div>
             <div className="flex justify-between pt-1 text-base font-semibold"><span>Total</span><span>{kr(subtotal + deliveryFee)}</span></div>
           </div>
           <p className="mt-4 text-xs text-ink-400">Ordren sendes direkte til {r.name}s køkken og ordersystem.</p>

@@ -1,4 +1,4 @@
-import type { Booking, Customer, Menu, Order, Restaurant } from "@/lib/types";
+import type { Booking, Call, Customer, Menu, Order, Restaurant } from "@/lib/types";
 
 export interface WebhookLogEntry {
   id: string;
@@ -37,6 +37,9 @@ export interface Repository {
   updateBooking(id: string, patch: Partial<Booking>): Promise<Booking | null>;
 
   listCustomers(restaurantId: string): Promise<Customer[]>;
+
+  listCalls(restaurantId: string, limit?: number): Promise<Call[]>;
+  insertCall(call: Call): Promise<Call>;
 
   logWebhook(entry: Omit<WebhookLogEntry, "id" | "createdAt">): Promise<void>;
   listWebhookLog(restaurantId?: string, limit?: number): Promise<WebhookLogEntry[]>;

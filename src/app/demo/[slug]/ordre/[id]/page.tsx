@@ -68,7 +68,7 @@ function Confirmation() {
           <h1 className="h-display mt-4 text-3xl sm:text-4xl">{rejected ? "Ordren blev desværre afvist" : "Tak for din bestilling!"}</h1>
           <p className="mt-2 text-white/75">
             Ordre <strong>#{order.orderNumber}</strong> · {formatDateTime(order.createdAt)} ·{" "}
-            {order.fulfillment === "delivery" ? `Levering til ${order.customer.address}` : `Afhentning hos ${r.name}`}
+            {order.fulfillment === "delivery" ? `Levering til ${order.customer.address}` : order.fulfillment === "table" ? `Serveres ved bord ${order.tableNumber}` : `Afhentning hos ${r.name}`}
           </p>
           {paid && order.paymentStatus === "paid" && <p className="mt-3 inline-block rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-semibold text-emerald-300">Betaling gennemført</p>}
         </div>

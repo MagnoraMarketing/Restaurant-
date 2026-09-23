@@ -68,6 +68,7 @@ export const DEMO_RESTAURANTS: Restaurant[] = [
       estimatedMinutes: 40,
     },
     pickup: { enabled: true, estimatedMinutes: 20 },
+    tableOrdering: { enabled: true, tables: 24 },
     booking: {
       enabled: true,
       maxPartySize: 30,
@@ -78,6 +79,7 @@ export const DEMO_RESTAURANTS: Restaurant[] = [
         "Borde holdes i 15 minutter. Selskaber på 9+ personer bekræftes manuelt af restauranten. Bordet er reserveret i 2 timer.",
     },
     paymentMethods: ["card", "mobilepay", "cash_on_pickup"],
+    reviewUrl: "https://www.google.com/search?q=Bella+Napoli+Vesterbrogade+anmeldelser",
     faq: commonFaq([
       {
         question: "Hvor lang tid tager en pizza?",
@@ -120,6 +122,7 @@ export const DEMO_RESTAURANTS: Restaurant[] = [
     openingHours: hours(["17:00", "23:00"], ["12:00", "00:00"], ["12:00", "22:00"]),
     delivery: { enabled: false, fee: 0, minimumOrder: 0, areas: [], estimatedMinutes: 0 },
     pickup: { enabled: true, estimatedMinutes: 30 },
+    tableOrdering: { enabled: true, tables: 18 },
     booking: {
       enabled: true,
       maxPartySize: 60,
@@ -163,6 +166,7 @@ export const DEMO_RESTAURANTS: Restaurant[] = [
     openingHours: hours(["11:00", "22:00"], ["11:00", "02:00"], ["12:00", "22:00"]),
     delivery: { enabled: true, fee: 29, minimumOrder: 120, areas: ["2200", "2100", "2400"], estimatedMinutes: 30 },
     pickup: { enabled: true, estimatedMinutes: 10 },
+    tableOrdering: { enabled: true, tables: 12 },
     booking: {
       enabled: false,
       maxPartySize: 0,
@@ -200,6 +204,7 @@ export const DEMO_RESTAURANTS: Restaurant[] = [
     openingHours: hours(["15:00", "21:30"], ["12:00", "22:00"], ["15:00", "21:00"]),
     delivery: { enabled: true, fee: 35, minimumOrder: 200, areas: ["1820", "1850", "2000"], estimatedMinutes: 45 },
     pickup: { enabled: true, estimatedMinutes: 25 },
+    tableOrdering: { enabled: false, tables: 0 },
     booking: {
       enabled: false,
       maxPartySize: 0,
@@ -244,6 +249,7 @@ export const DEMO_RESTAURANTS: Restaurant[] = [
     openingHours: hours(["08:00", "18:00"], ["09:00", "20:00"], ["09:00", "17:00"]),
     delivery: { enabled: false, fee: 0, minimumOrder: 0, areas: [], estimatedMinutes: 0 },
     pickup: { enabled: true, estimatedMinutes: 10 },
+    tableOrdering: { enabled: true, tables: 14 },
     booking: {
       enabled: true,
       maxPartySize: 20,

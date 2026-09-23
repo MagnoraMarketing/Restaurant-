@@ -3,7 +3,9 @@ import { LeadForm } from "@/components/forms/LeadForm";
 
 export const metadata: Metadata = { title: "Book demo" };
 
-export default function ContactPage() {
+export default async function ContactPage({ searchParams }: PageProps<"/kontakt">) {
+  const pakke = (await searchParams).pakke;
+  const preselect = typeof pakke === "string" ? [pakke] : [];
   return (
     <section className="container-x grid gap-12 pt-32 pb-24 lg:grid-cols-2">
       <div>
@@ -18,7 +20,7 @@ export default function ContactPage() {
           <li>✓ Vi viser integration til dit nuværende system</li>
         </ul>
       </div>
-      <LeadForm />
+      <LeadForm preselect={preselect} />
     </section>
   );
 }

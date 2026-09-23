@@ -2,22 +2,26 @@
   "name": "aibooking-restaurant",
   "version": "0.1.0",
   "private": true,
-  "description": "AIbooking Restaurant – AI-receptionist til restauranter, pizzeriaer, caféer og takeaway. Salgsdemo + multi-tenant ordre- og bookingplatform.",
+  "description": "AIbooking Restaurant \u2013 AI-receptionist til restauranter, pizzeriaer, caf\u00e9er og takeaway. Salgsdemo + multi-tenant ordre- og bookingplatform.",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "db:seed-sql": "tsx scripts/generate-seed.ts",
+    "test:assistant": "tsx scripts/test-assistant.ts"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.0",
     "next": "^16.3.6",
+    "qrcode": "^1.5.4",
     "react": "^19.3.0",
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",
     "@types/node": "^26.6.2",
+    "@types/qrcode": "^1.5.6",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "postcss": "^8.5.28",

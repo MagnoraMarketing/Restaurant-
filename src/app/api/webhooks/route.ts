@@ -5,7 +5,7 @@ import { ApiError, handler, json, requireAdmin } from "@/lib/server/http";
 import { serverEnv } from "@/lib/server/env";
 import { verifyApiKey } from "@/lib/server/admin-auth";
 import { verifySignature } from "@/lib/server/integrations/signing";
-import { createBooking, createOrder, resolveRestaurant, setOrderStatus, updateBooking } from "@/lib/server/services";
+import { createBooking, createOrder, recordCall, resolveRestaurant, setOrderStatus, updateBooking } from "@/lib/server/services";
 import { repo } from "@/lib/server/repository";
 
 /**
@@ -55,8 +55,11 @@ export const POST = handler(async (req: NextRequest) => {
       case "booking.cancelled":
         result = await updateBooking(String(data.bookingId), event === "booking.cancelled" ? { status: "cancelled" } : data);
         break;
+      case "call.completed":
+        result = await recordCall(data);
+        break;
       default:
-        // fx call.started, call.completed, conversation.summary – logges til historik
+        // fx call.started, conversation.summary – logges til historik
         await log("received");
         return json({ received: true, event });
     }
