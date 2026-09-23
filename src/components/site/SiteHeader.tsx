@@ -158,6 +158,7 @@ export function SiteHeader() {
             ["/#samarbejde", "Priser"],
             ["/demo", "Demo-restauranter"],
             ["/admin", "Backend-demo"],
+            ["/partner", "Partner-portal"],
             ["/kontakt", "Book demo"],
           ].map(([href, label]) => (
             <Link key={href} href={href} onClick={() => setMobile(false)} className="block border-b border-white/5 py-3.5 text-base">
