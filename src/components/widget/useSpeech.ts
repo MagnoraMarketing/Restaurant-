@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { LOCALE_LABEL, type Locale } from "@/lib/i18n";
 
 // Voice-demo i browseren via Web Speech API (da-DK). Den rigtige AIbooking Voice
 // kører server-side med telefoni; dette gør det muligt at prøve voice uden opsætning.
@@ -8,7 +9,8 @@ import { useCallback, useEffect, useRef, useState } from "react";
 /* eslint-disable @typescript-eslint/no-explicit-any */
 type Recognition = any;
 
-export function useSpeech(onFinal: (text: string) => void) {
+export function useSpeech(onFinal: (text: string) => void, locale: Locale = "da") {
+  const bcp47 = LOCALE_LABEL[locale].bcp47;
   const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
   const [interim, setInterim] = useState("");
@@ -22,7 +24,7 @@ export function useSpeech(onFinal: (text: string) => void) {
     if (!SR) return;
     setSupported(true);
     const rec: Recognition = new SR();
-    rec.lang = "da-DK";
+    rec.lang = bcp47;
     rec.interimResults = true;
     rec.continuous = false;
     rec.onresult = (e: any) => {
@@ -42,7 +44,7 @@ export function useSpeech(onFinal: (text: string) => void) {
     rec.onerror = () => setListening(false);
     recRef.current = rec;
     return () => rec.abort();
-  }, []);
+  }, [bcp47]);
 
   const start = useCallback(() => {
     if (!recRef.current) return;
@@ -65,13 +67,13 @@ export function useSpeech(onFinal: (text: string) => void) {
     if (!synth) return onDone?.();
     synth.cancel();
     const u = new SpeechSynthesisUtterance(text.replace(/\p{Extended_Pictographic}|\uFE0F|✓/gu, ""));
-    u.lang = "da-DK";
+    u.lang = bcp47;
     u.rate = 1.05;
-    const voice = synth.getVoices().find((v) => v.lang.toLowerCase().startsWith("da"));
+    const voice = synth.getVoices().find((v) => v.lang.toLowerCase().startsWith(locale));
     if (voice) u.voice = voice;
     u.onend = () => onDone?.();
     synth.speak(u);
-  }, []);
+  }, [bcp47, locale]);
 
   return { supported, listening, interim, start, stop, speak };
 }

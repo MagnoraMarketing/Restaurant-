@@ -5,7 +5,7 @@ import Link from "next/link";
 import type { Menu, Restaurant } from "@/lib/types";
 import {
   initialState,
-  MAIN_MENU,
+  mainMenu,
   respond,
   type AssistantCard,
   type AssistantMessage,
@@ -16,6 +16,7 @@ import { kr, formatDate, telHref } from "@/lib/format";
 import { describeModifiers } from "@/lib/pricing";
 import { Icon } from "@/components/ui/Icon";
 import { useSpeech } from "./useSpeech";
+import { useI18n } from "@/components/i18n/I18nProvider";
 
 let seq = 0;
 const uid = () => `m${Date.now()}${seq++}`;
@@ -37,8 +38,9 @@ export interface ReceptionistChatProps {
  * AIbooking-widget ikke er konfigureret. Ordrer/bookinger oprettes via det rigtige API.
  */
 export function ReceptionistChat({ restaurant, menu, autoStart, autoVoice, compact, onClose, className = "" }: ReceptionistChatProps) {
+  const { t, locale } = useI18n();
   const [messages, setMessages] = useState<AssistantMessage[]>(() => [
-    { id: uid(), role: "assistant", text: restaurant.widget.welcomeMessage, quickReplies: MAIN_MENU },
+    { id: uid(), role: "assistant", text: t(restaurant.widget.welcomeMessage), quickReplies: mainMenu(t) },
   ]);
   const [state, setState] = useState<AssistantState>(initialState);
   const [input, setInput] = useState("");
@@ -54,6 +56,8 @@ export function ReceptionistChat({ restaurant, menu, autoStart, autoVoice, compa
     () => ({
       restaurant,
       menu,
+      t,
+      locale,
       source: "chat" as const,
       api: {
         createOrder: assistantApi.createOrder,
@@ -62,13 +66,13 @@ export function ReceptionistChat({ restaurant, menu, autoStart, autoVoice, compa
         updateBooking: assistantApi.updateBooking,
       },
     }),
-    [restaurant, menu],
+    [restaurant, menu, t, locale],
   );
 
   const speechRef = useRef<ReturnType<typeof useSpeech> | null>(null);
 
   const send = useCallback(
-    async (text: string, viaVoice = false) => {
+    async (text: string, viaVoice = false, display?: string) => {
       const clean = text.trim();
       if (!clean || busy.current) return;
       if (clean === "__admin__") {
@@ -77,7 +81,7 @@ export function ReceptionistChat({ restaurant, menu, autoStart, autoVoice, compa
       }
       busy.current = true;
       setInput("");
-      setMessages((m) => [...m.map((x) => ({ ...x, quickReplies: undefined })), { id: uid(), role: "user", text: clean }]);
+      setMessages((m) => [...m.map((x) => ({ ...x, quickReplies: undefined })), { id: uid(), role: "user", text: display ?? clean }]);
       setTyping(true);
       const started = Date.now();
       const res = await respond({ ...ctx, source: viaVoice ? "voice" : "chat" }, stateRef.current, clean);
@@ -94,7 +98,7 @@ export function ReceptionistChat({ restaurant, menu, autoStart, autoVoice, compa
     [ctx],
   );
 
-  const speech = useSpeech((text) => send(text, true));
+  const speech = useSpeech((text) => send(text, true), locale);
   speechRef.current = speech;
 
   useEffect(() => {
@@ -114,7 +118,7 @@ export function ReceptionistChat({ restaurant, menu, autoStart, autoVoice, compa
       return;
     }
     setVoiceMode(true);
-    const intro = `Hej, du taler med AI-receptionisten hos ${restaurant.name}. Hvad kan jeg hjælpe med?`;
+    const intro = t("Hej, du taler med AI-receptionisten hos {name}. Hvad kan jeg hjælpe med?", { name: restaurant.name });
     setMessages((m) => [...m, { id: uid(), role: "assistant", text: `🎙️ ${intro}` }]);
     speech.speak(intro, () => speech.start());
   };
@@ -139,24 +143,24 @@ export function ReceptionistChat({ restaurant, menu, autoStart, autoVoice, compa
         </div>
         <div className="min-w-0 flex-1">
           <p className="truncate text-sm font-semibold">{restaurant.name}</p>
-          <p className="truncate text-xs text-ink-400">AI-receptionist · svarer med det samme</p>
+          <p className="truncate text-xs text-ink-400">{t("AI-receptionist · svarer med det samme")}</p>
         </div>
         {speech.supported && (
           <button
             onClick={toggleVoice}
             className={`grid h-9 w-9 place-items-center rounded-full border transition ${voiceMode ? "border-transparent text-white" : "border-white/10 text-ink-300 hover:text-white"}`}
             style={voiceMode ? { background: accent } : undefined}
-            title={voiceMode ? "Stop voice" : "Tal med AI'en"}
-            aria-label={voiceMode ? "Stop voice" : "Tal med AI'en"}
+            title={voiceMode ? t("Stop voice") : t("Tal med AI'en")}
+            aria-label={voiceMode ? t("Stop voice") : t("Tal med AI'en")}
           >
             <Icon name="mic" className="h-4.5 w-4.5" />
           </button>
         )}
-        <a href={telHref(restaurant.phone)} className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-ink-300 transition hover:text-white" title="Ring" aria-label="Ring til restauranten">
+        <a href={telHref(restaurant.phone)} className="grid h-9 w-9 place-items-center rounded-full border border-white/10 text-ink-300 transition hover:text-white" title={t("Ring")} aria-label={t("Ring til restauranten")}>
           <Icon name="phone" className="h-4 w-4" />
         </a>
         {onClose && (
-          <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full text-ink-300 hover:bg-white/5 hover:text-white" aria-label="Luk">
+          <button onClick={onClose} className="grid h-9 w-9 place-items-center rounded-full text-ink-300 hover:bg-white/5 hover:text-white" aria-label={t("Luk")}>
             <Icon name="close" className="h-5 w-5" />
           </button>
         )}
@@ -178,7 +182,7 @@ export function ReceptionistChat({ restaurant, menu, autoStart, autoVoice, compa
           </div>
         ))}
         {typing && (
-          <div className="flex gap-1 rounded-2xl rounded-bl-md bg-ink-800 px-4 py-3 w-fit" aria-label="Skriver">
+          <div className="flex gap-1 rounded-2xl rounded-bl-md bg-ink-800 px-4 py-3 w-fit" aria-label={t("Skriver")}>
             {[0, 1, 2].map((i) => (
               <span key={i} className="h-1.5 w-1.5 animate-bounce rounded-full bg-ink-400" style={{ animationDelay: `${i * 0.15}s` }} />
             ))}
@@ -190,7 +194,7 @@ export function ReceptionistChat({ restaurant, menu, autoStart, autoVoice, compa
             {last.quickReplies.map((q) => (
               <button
                 key={q.label}
-                onClick={() => send(q.value)}
+                onClick={() => send(q.value, false, q.label)}
                 className="rounded-full border border-white/12 bg-white/[0.03] px-3 py-1.5 text-[13px] font-medium text-white/90 transition hover:border-[var(--accent)] hover:bg-[color-mix(in_oklab,var(--accent)_14%,transparent)]"
               >
                 {q.label}
@@ -207,14 +211,14 @@ export function ReceptionistChat({ restaurant, menu, autoStart, autoVoice, compa
             onClick={() => (speech.listening ? speech.stop() : speech.start())}
             className="relative grid h-12 w-12 place-items-center rounded-full text-white"
             style={{ background: accent }}
-            aria-label={speech.listening ? "Stop med at lytte" : "Tal"}
+            aria-label={speech.listening ? t("Stop med at lytte") : t("Tal")}
           >
             {speech.listening && <span className="absolute inset-0 animate-pulse-ring rounded-full" />}
             <Icon name="mic" className="h-5 w-5" />
           </button>
-          <p className="flex-1 text-sm text-ink-300">{speech.listening ? "Jeg lytter… tal bare naturligt" : "Tryk på mikrofonen for at tale"}</p>
+          <p className="flex-1 text-sm text-ink-300">{speech.listening ? t("Jeg lytter… tal bare naturligt") : t("Tryk på mikrofonen for at tale")}</p>
           <button onClick={toggleVoice} className="text-xs font-semibold text-ink-400 hover:text-white">
-            Skriv i stedet
+            {t("Skriv i stedet")}
           </button>
         </div>
       ) : (
@@ -228,23 +232,24 @@ export function ReceptionistChat({ restaurant, menu, autoStart, autoVoice, compa
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Skriv fx “2 pepperoni med ekstra ost”"
+            placeholder={t("Skriv fx “2 pepperoni med ekstra ost”")}
             className="min-w-0 flex-1 rounded-full bg-ink-850 px-4 py-2.5 text-[14px] outline-none placeholder:text-ink-400 focus:ring-2 focus:ring-[color-mix(in_oklab,var(--accent)_40%,transparent)]"
-            aria-label="Besked til AI-receptionisten"
+            aria-label={t("Besked til AI-receptionisten")}
           />
-          <button type="submit" disabled={!input.trim()} className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white transition disabled:opacity-40" style={{ background: accent }} aria-label="Send">
+          <button type="submit" disabled={!input.trim()} className="grid h-10 w-10 shrink-0 place-items-center rounded-full text-white transition disabled:opacity-40" style={{ background: accent }} aria-label={t("Send")}>
             <Icon name="send" className="h-4.5 w-4.5" />
           </button>
         </form>
       )}
       <p className="border-t border-white/5 bg-ink-950/60 py-1.5 text-center text-[10.5px] tracking-wide text-ink-400">
-        Drevet af <span className="font-semibold text-white/70">AIbooking</span> · Demo
+        {t("Drevet af")} <span className="font-semibold text-white/70">{t("AIbooking")}</span> {t("· Demo")}
       </p>
     </div>
   );
 }
 
 function Card({ card, accent, restaurant }: { card: AssistantCard; accent: string; restaurant: Restaurant }) {
+  const { t, locale } = useI18n();
   if (card.type === "summary")
     return (
       <div className="rounded-2xl border border-white/10 bg-ink-850 p-3 text-[13px]">
@@ -256,7 +261,7 @@ function Card({ card, accent, restaurant }: { card: AssistantCard; accent: strin
         ))}
         {card.total && (
           <div className="mt-1.5 flex justify-between border-t border-white/10 pt-2 font-semibold">
-            <span>Total</span>
+            <span>{t("Total")}</span>
             <span>{card.total}</span>
           </div>
         )}
@@ -273,17 +278,17 @@ function Card({ card, accent, restaurant }: { card: AssistantCard; accent: strin
             <div key={i.id} className="flex justify-between gap-2">
               <span className="text-white/85">
                 {i.quantity} × {i.name}
-                {describeModifiers(i.modifiers) && <span className="block text-xs text-ink-400">{describeModifiers(i.modifiers)}</span>}
+                {describeModifiers(i.modifiers, undefined, t) && <span className="block text-xs text-ink-400">{describeModifiers(i.modifiers, undefined, t)}</span>}
               </span>
               <span>{kr(i.lineTotal)}</span>
             </div>
           ))}
           <div className="flex justify-between border-t border-white/10 pt-1.5 font-semibold">
-            <span>Total</span>
+            <span>{t("Total")}</span>
             <span>{kr(card.order.total)}</span>
           </div>
           <Link href={`/demo/${restaurant.slug}/ordre/${card.order.id}`} className="mt-1 inline-flex items-center gap-1 text-xs font-semibold" style={{ color: accent }}>
-            Følg ordren <Icon name="arrow" className="h-3.5 w-3.5" />
+            {t("Følg ordren")} <Icon name="arrow" className="h-3.5 w-3.5" />
           </Link>
         </div>
       </div>
@@ -294,11 +299,11 @@ function Card({ card, accent, restaurant }: { card: AssistantCard; accent: strin
         <div className="mb-1.5 flex items-center justify-between">
           <span className="font-semibold">Reservation {card.booking.reference}</span>
           <span className={`rounded-full px-2 py-0.5 text-[11px] font-semibold ${card.booking.status === "confirmed" ? "bg-emerald-400/15 text-emerald-300" : card.booking.status === "cancelled" ? "bg-red-400/15 text-red-300" : "bg-amber-400/15 text-amber-300"}`}>
-            {card.booking.status === "confirmed" ? "Bekræftet" : card.booking.status === "cancelled" ? "Annulleret" : "Afventer"}
+            {card.booking.status === "confirmed" ? t("Bekræftet") : card.booking.status === "cancelled" ? t("Annulleret") : t("Afventer")}
           </span>
         </div>
         <p className="text-white/80">
-          {formatDate(card.booking.date)} kl. {card.booking.time} · {card.booking.partySize} personer
+          {t("{date} kl. {time} · {n} personer", { date: formatDate(card.booking.date, locale), time: card.booking.time, n: card.booking.partySize })}
         </p>
         <p className="text-ink-400">{card.booking.customer.name}</p>
       </div>
@@ -310,7 +315,7 @@ function Card({ card, accent, restaurant }: { card: AssistantCard; accent: strin
       </span>
       <span>
         <span className="block text-sm font-semibold">{card.phone}</span>
-        <span className="text-xs text-ink-400">Ring til {restaurant.name}</span>
+        <span className="text-xs text-ink-400">{t("Ring til {name}", { name: restaurant.name })}</span>
       </span>
     </a>
   );

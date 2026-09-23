@@ -6,6 +6,7 @@ import { publicConfig } from "@/lib/config";
 import { Icon } from "@/components/ui/Icon";
 import { ReceptionistChat } from "./ReceptionistChat";
 import { OPEN_EVENT, type OpenDetail } from "./events";
+import { useT } from "@/components/i18n/I18nProvider";
 
 declare global {
   interface Window {
@@ -44,6 +45,7 @@ export function iframeSrc(url: string, r: Restaurant, agentId: string) {
  *  - Ikke konfigureret → indbygget demo-receptionist (chat + voice i browseren).
  */
 export function AIbookingWidget({ restaurant, menu }: { restaurant: Restaurant; menu: Menu }) {
+  const t = useT();
   const [open, setOpen] = useState(false);
   const [autoStart, setAutoStart] = useState<string | undefined>();
   const [autoVoice, setAutoVoice] = useState(false);
@@ -104,12 +106,12 @@ export function AIbookingWidget({ restaurant, menu }: { restaurant: Restaurant; 
           {ext.mode === "iframe" ? (
             <div className="flex h-full flex-col overflow-hidden rounded-[28px] border border-white/10 bg-ink-900 shadow-2xl">
               <div className="flex items-center justify-between border-b border-white/8 px-4 py-3">
-                <span className="text-sm font-semibold">{restaurant.name} · AI-receptionist</span>
-                <button onClick={() => setOpen(false)} aria-label="Luk" className="text-ink-300 hover:text-white">
+                <span className="text-sm font-semibold">{restaurant.name} · {t("AI-receptionist")}</span>
+                <button onClick={() => setOpen(false)} aria-label={t("Luk")} className="text-ink-300 hover:text-white">
                   <Icon name="close" />
                 </button>
               </div>
-              <iframe title="AIbooking" src={iframeSrc(ext.url, restaurant, ext.agentId)} className="flex-1" allow="microphone; autoplay" />
+              <iframe title={t("AIbooking")} src={iframeSrc(ext.url, restaurant, ext.agentId)} className="flex-1" allow="microphone; autoplay" />
             </div>
           ) : (
             <ReceptionistChat key={session} restaurant={restaurant} menu={menu} autoStart={autoStart} autoVoice={autoVoice} onClose={() => setOpen(false)} className="h-full" />
@@ -121,11 +123,11 @@ export function AIbookingWidget({ restaurant, menu }: { restaurant: Restaurant; 
         className="group relative flex h-14 items-center gap-2 rounded-full pr-5 pl-4 font-semibold text-white shadow-2xl shadow-black/50 transition hover:scale-[1.03]"
         style={{ background: accent, ["--accent" as string]: accent }}
         aria-expanded={open}
-        aria-label="Åbn AI-receptionisten"
+        aria-label={t("Åbn AI-receptionisten")}
       >
         {!open && <span className="absolute inset-0 animate-pulse-ring rounded-full" />}
         <Icon name={open ? "close" : "chat"} className="h-6 w-6" />
-        <span className="hidden text-sm sm:inline">{open ? "Luk" : "Spørg AI-receptionisten"}</span>
+        <span className="hidden text-sm sm:inline">{open ? t("Luk") : t("Spørg AI-receptionisten")}</span>
       </button>
     </div>
   );

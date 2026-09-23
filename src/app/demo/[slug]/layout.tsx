@@ -2,13 +2,15 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getRestaurant, repo } from "@/lib/server/repository";
 import { RestaurantShell } from "@/components/restaurant/RestaurantShell";
+import { getT } from "@/lib/i18n/server";
 
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: LayoutProps<"/demo/[slug]">): Promise<Metadata> {
   const { slug } = await params;
   const r = await getRestaurant(slug);
-  return r ? { title: { default: `${r.name} – ${r.tagline}`, template: `%s · ${r.name}` }, description: r.description } : {};
+  const { t } = await getT();
+  return r ? { title: { default: `${r.name} – ${t(r.tagline)}`, template: `%s · ${r.name}` }, description: t(r.description) } : {};
 }
 
 export default async function RestaurantLayout({ children, params }: LayoutProps<"/demo/[slug]">) {

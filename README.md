@@ -24,8 +24,8 @@ Defineret ét sted: `src/lib/demo/catalog.ts` → `PRICES`.
 | Ydelse | Pris |
 | --- | --- |
 | Standard hjemmeside med menukort | 200 € |
-| QR-kode til print | 10 € |
-| NFC-chip til anmeldelser (styres i login) | 50 € |
+| QR-kode til print | 30 € pr. stk. |
+| NFC-chip til anmeldelser (styres i login) | 30 € pr. stk. |
 | Import af eksisterende menukort | 100 € |
 | Voice widget | 134 € pr. 150 min. |
 | Indgående AI-receptionist | 134 € pr. 150 min. |
@@ -41,6 +41,15 @@ npm run test:assistant       # røgtest af demo-receptionistens samtalemotor
 ```
 
 Uden environment variables kører appen i **demo-mode**: in-memory data med demo-ordrer, -bookinger og -opkald, åben admin, simuleret betaling og en indbygget demo-receptionist (chat + voice via browserens Web Speech API, `da-DK`).
+
+## Sprog (spansk · dansk · engelsk)
+
+Siden bygges på dansk, men **spansk er fokus-/standardsprog** ved fremvisning. Alle sider, admin og AI-receptionisten findes på spansk, dansk og engelsk.
+
+- Sproget vælges i headeren (ES · DA · EN) og gemmes i cookien `lang`.
+- Uden valgt sprog: spansk/latinamerikansk IP (`x-vercel-ip-country`) → spansk, ellers browserens sprog (`Accept-Language`) → dansk/engelsk, og til sidst spansk.
+- `?lang=es|da|en` på enhver URL sætter sproget (praktisk til demo-links).
+- Oversættelser ligger i `src/lib/i18n/dict/` som `[dansk, spansk, engelsk]`, nøglet på den danske tekst. Tjek manglende nøgler med `npx tsx scripts/i18n-keys.ts --verbose`.
 
 ## Arkitektur
 

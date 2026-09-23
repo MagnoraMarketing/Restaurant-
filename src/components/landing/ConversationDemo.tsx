@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/ui/Icon";
+import { useT } from "@/components/i18n/I18nProvider";
 
 type Line = { who: "Kunde" | "AI"; text: string };
 
@@ -27,6 +28,7 @@ export function ConversationDemo({
   doneTitle?: string;
   doneText?: string;
 } = {}) {
+  const t = useT();
   const [step, setStep] = useState(0);
   const ref = useRef<HTMLDivElement>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -71,29 +73,29 @@ export function ConversationDemo({
           {!done && <span className="absolute inset-0 animate-pulse-ring rounded-full" />}
         </span>
         <div className="flex-1">
-          <p className="text-sm font-semibold">{title}</p>
+          <p className="text-sm font-semibold">{t(title)}</p>
           <p className="text-xs text-ink-400">AI-receptionisten besvarer · 00:{String(Math.min(step * 6, 59)).padStart(2, "0")}</p>
         </div>
         <button onClick={play} className="btn-ghost !px-3 !py-1.5 text-xs">
-          ↻ Afspil
+          {t("↻ Afspil")}
         </button>
       </div>
       <div className="min-h-[340px] space-y-3">
         {SCRIPT.slice(0, step).map((m, i) => (
           <div key={i} className={`flex animate-pop ${m.who === "Kunde" ? "justify-start" : "justify-end"}`}>
             <div className={`max-w-[85%] rounded-2xl px-4 py-2.5 text-sm ${m.who === "Kunde" ? "rounded-bl-md bg-ink-800" : "rounded-br-md bg-ember-500 text-white"}`}>
-              <span className={`mb-0.5 block text-[10px] font-bold tracking-wider uppercase ${m.who === "Kunde" ? "text-ink-400" : "text-white/70"}`}>{m.who}</span>
-              {m.text}
+              <span className={`mb-0.5 block text-[10px] font-bold tracking-wider uppercase ${m.who === "Kunde" ? "text-ink-400" : "text-white/70"}`}>{t(m.who)}</span>
+              {t(m.text)}
             </div>
           </div>
         ))}
         {done && (
           <div className="animate-pop rounded-2xl border border-emerald-400/30 bg-emerald-400/10 p-4">
             <p className="flex items-center gap-2 font-semibold text-emerald-300">
-              <Icon name="check" className="h-5 w-5" /> {doneTitle}
+              <Icon name="check" className="h-5 w-5" /> {t(doneTitle)}
             </p>
-            <p className="mt-1 text-sm text-white/80">{doneText}</p>
-            <p className="mt-1 text-xs text-ink-400">Sendt direkte til køkkenets ordersystem – og kunden får en bekræftelse.</p>
+            <p className="mt-1 text-sm text-white/80">{t(doneText)}</p>
+            <p className="mt-1 text-xs text-ink-400">{t("Sendt direkte til køkkenets ordersystem – og kunden får en bekræftelse.")}</p>
           </div>
         )}
       </div>

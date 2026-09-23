@@ -72,7 +72,7 @@ export const OFFERINGS: Offering[] = [
     text: "En QR-kode på bordet åbner jeres online menukort, hvor gæsten kan bestille direkte til bordet. NFC-chippen sender gæsten til jeres anmeldelsesside med ét tryk – og I styrer selv linket i jeres login.",
     bullets: ["QR-kode klar til print", "Online menukort med billeder", "Bestilling med bordnummer", "NFC-chip til anmeldelser – styres i login"],
     cta: "Scan demo-bordet",
-    price: "QR 10 € · NFC 50 €",
+    price: "QR 30 € · NFC 30 € pr. stk.",
   },
   {
     key: "hjemmeside",
@@ -302,8 +302,8 @@ export const PRICES: { base: PriceItem[]; addons: PriceItem[]; ai: PriceItem[] }
     },
   ],
   addons: [
-    { key: "qr", emoji: "🔳", name: "QR-kode til print", price: 10, text: "QR-kode til menukortet på hjemmesiden – klar til at printe på borde, skilte og flyers." },
-    { key: "nfc", emoji: "⭐", name: "NFC-chip til anmeldelser", price: 50, text: "Gæsten holder telefonen mod chippen og lander på jeres anmeldelsesside. Linket styres i jeres login." },
+    { key: "qr", emoji: "🔳", name: "QR-kode til print", price: 30, unit: "stk.", text: "QR-kode til menukortet på hjemmesiden – klar til at printe på borde, skilte og flyers." },
+    { key: "nfc", emoji: "⭐", name: "NFC-chip til anmeldelser", price: 30, unit: "stk.", text: "Gæsten holder telefonen mod chippen og lander på jeres anmeldelsesside. Linket styres i jeres login." },
     { key: "import", emoji: "📥", name: "Import af eksisterende menukort", price: 100, text: "Vi overfører jeres nuværende menu med priser, beskrivelser og tilvalg." },
   ],
   ai: [

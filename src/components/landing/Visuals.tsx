@@ -3,7 +3,8 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { Menu, Restaurant } from "@/lib/types";
-import { kr } from "@/lib/format";
+import { kr, dayShort } from "@/lib/format";
+import { useI18n, useT } from "@/components/i18n/I18nProvider";
 import { FoodImage } from "@/components/ui/FoodImage";
 import { Icon } from "@/components/ui/Icon";
 import { openReceptionist } from "@/components/widget/events";
@@ -13,6 +14,7 @@ import { QrCode } from "./QrCode";
 // screenshots), så det er skarpt på alle skærme og følger restaurantens farver.
 
 export function BrowserFrame({ url, children, className = "" }: { url: string; children: React.ReactNode; className?: string }) {
+  const t = useT();
   return (
     <div className={`overflow-hidden rounded-[22px] border border-white/10 bg-ink-900 shadow-2xl shadow-black/60 ${className}`}>
       <div className="flex items-center gap-2 border-b border-white/8 bg-ink-850 px-4 py-2.5">
@@ -28,14 +30,15 @@ export function BrowserFrame({ url, children, className = "" }: { url: string; c
 
 /** Eksempel på en restauranthjemmeside (Bella Napoli) – bruges øverst på forsiden. */
 export function RestaurantSitePreview({ restaurant, menu }: { restaurant: Restaurant; menu: Menu }) {
+  const t = useT();
   const accent = restaurant.accentColor;
   const featured = menu.products.filter((p) => p.popular).slice(0, 3);
   return (
     <div className="bg-ink-950">
       <div className="flex items-center justify-between px-5 py-3 text-xs">
         <span className="font-display text-base font-semibold">{restaurant.emoji} {restaurant.name}</span>
-        <span className="hidden gap-4 text-ink-300 sm:flex"><span>Menu</span><span>Book bord</span><span>Find os</span></span>
-        <span className="rounded-full px-3 py-1 font-semibold text-white" style={{ background: accent }}>Bestil</span>
+        <span className="hidden gap-4 text-ink-300 sm:flex"><span>{t("Menu")}</span><span>{t("Book bord")}</span><span>{t("Find os")}</span></span>
+        <span className="rounded-full px-3 py-1 font-semibold text-white" style={{ background: accent }}>{t("Bestil")}</span>
       </div>
       <div className="relative h-52 sm:h-64">
         <FoodImage src={restaurant.heroImage} alt={restaurant.name} emoji={restaurant.emoji} className="absolute inset-0 h-full w-full" priority />
@@ -44,9 +47,9 @@ export function RestaurantSitePreview({ restaurant, menu }: { restaurant: Restau
           <p className="font-display text-3xl font-semibold sm:text-4xl">{restaurant.name}</p>
           <p className="text-sm text-white/75">{restaurant.tagline}</p>
           <div className="mt-3 flex gap-2 text-xs font-semibold">
-            <span className="rounded-full px-3 py-1.5 text-white" style={{ background: accent }}>🍕 Bestil mad</span>
-            <span className="rounded-full bg-white/10 px-3 py-1.5">🍽️ Book bord</span>
-            <span className="hidden rounded-full bg-white/10 px-3 py-1.5 sm:inline">📞 Ring</span>
+            <span className="rounded-full px-3 py-1.5 text-white" style={{ background: accent }}>{t("🍕 Bestil mad")}</span>
+            <span className="rounded-full bg-white/10 px-3 py-1.5">{t("🍽️ Book bord")}</span>
+            <span className="hidden rounded-full bg-white/10 px-3 py-1.5 sm:inline">{t("📞 Ring")}</span>
           </div>
         </div>
       </div>
@@ -67,6 +70,7 @@ export function RestaurantSitePreview({ restaurant, menu }: { restaurant: Restau
 
 /** Små notifikationer der "popper" ind over hero-mockuppen. */
 export function LiveNotifications() {
+  const t = useT();
   const items = [
     { icon: "📞", title: "Indgående opkald", text: "AI-receptionisten svarer…", cls: "border-sky-400/30" },
     { icon: "✓", title: "Ny ordre #1049", text: "2 × Pepperoni · levering", cls: "border-emerald-400/30" },
@@ -84,8 +88,8 @@ export function LiveNotifications() {
         <div key={n.title} className={`flex w-60 animate-slide-in items-center gap-3 rounded-2xl border bg-ink-900/95 p-3 shadow-xl backdrop-blur ${n.cls}`}>
           <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-white/5 text-base">{n.icon}</span>
           <span className="min-w-0">
-            <span className="block truncate text-xs font-semibold">{n.title}</span>
-            <span className="block truncate text-[11px] text-ink-400">{n.text}</span>
+            <span className="block truncate text-xs font-semibold">{t(n.title)}</span>
+            <span className="block truncate text-[11px] text-ink-400">{t(n.text)}</span>
           </span>
         </div>
       ))}
@@ -94,6 +98,7 @@ export function LiveNotifications() {
 }
 
 export function Waveform({ bars = 28, className = "" }: { bars?: number; className?: string }) {
+  const t = useT();
   return (
     <div className={`flex h-12 items-center justify-center gap-1 ${className}`} aria-hidden>
       {Array.from({ length: bars }, (_, i) => (
@@ -104,8 +109,9 @@ export function Waveform({ bars = 28, className = "" }: { bars?: number; classNa
 }
 
 export function VoiceWidgetVisual() {
+  const t = useT();
   return (
-    <BrowserFrame url="din-restaurant.dk" className="relative">
+    <BrowserFrame url={t("din-restaurant.dk")} className="relative">
       <div className="relative h-[380px] bg-gradient-to-br from-ink-900 to-ink-950 p-6">
         <div className="space-y-3 opacity-40">
           <div className="h-5 w-40 rounded-full bg-white/10" />
@@ -116,13 +122,13 @@ export function VoiceWidgetVisual() {
           </div>
         </div>
         <div className="absolute right-5 bottom-5 w-72 rounded-3xl border border-white/10 bg-ink-900 p-5 shadow-2xl">
-          <p className="text-sm font-semibold">🎙️ Tal med os</p>
-          <p className="text-xs text-ink-400">AI-receptionisten lytter…</p>
+          <p className="text-sm font-semibold">{t("🎙️ Tal med os")}</p>
+          <p className="text-xs text-ink-400">{t("AI-receptionisten lytter…")}</p>
           <Waveform className="mt-4" />
-          <p className="mt-3 rounded-2xl bg-ink-800 px-3 py-2 text-xs text-white/85">“Har I et bord til to i aften kl. 19?”</p>
-          <p className="mt-2 rounded-2xl bg-ember-500 px-3 py-2 text-xs text-white">“Ja! Jeg har booket et bord til 2 kl. 19:00 ✓”</p>
+          <p className="mt-3 rounded-2xl bg-ink-800 px-3 py-2 text-xs text-white/85">{t("“Har I et bord til to i aften kl. 19?”")}</p>
+          <p className="mt-2 rounded-2xl bg-ember-500 px-3 py-2 text-xs text-white">{t("“Ja! Jeg har booket et bord til 2 kl. 19:00 ✓”")}</p>
           <button onClick={() => openReceptionist(undefined, { voice: true })} className="pointer-events-auto mt-4 w-full rounded-full bg-white py-2 text-xs font-bold text-ink-950">
-            Prøv voice nu
+            {t("Prøv voice nu")}
           </button>
         </div>
       </div>
@@ -131,45 +137,47 @@ export function VoiceWidgetVisual() {
 }
 
 export function TakeawayVisual() {
+  const t = useT();
   const steps = ["Bestilt", "I køkkenet", "Klar", "På vej"];
   return (
     <div className="relative mx-auto w-[290px]">
       <div className="rounded-[44px] border-[10px] border-ink-800 bg-ink-950 p-4 shadow-2xl">
         <div className="mx-auto mb-3 h-1.5 w-20 rounded-full bg-ink-800" />
-        <p className="text-xs text-ink-400">Din ordre #1051</p>
-        <p className="font-display text-xl font-semibold">Leveres ca. 19:40</p>
+        <p className="text-xs text-ink-400">{t("Din ordre #1051")}</p>
+        <p className="font-display text-xl font-semibold">{t("Leveres ca. 19:40")}</p>
         <div className="mt-4 flex justify-between">
           {steps.map((s, i) => (
             <div key={s} className="flex flex-col items-center gap-1">
               <span className={`grid h-7 w-7 place-items-center rounded-full text-[10px] font-bold ${i < 3 ? "bg-ember-500 text-white" : "bg-white/10 text-ink-400"}`}>{i < 3 ? "✓" : "4"}</span>
-              <span className="text-[9px] text-ink-400">{s}</span>
+              <span className="text-[9px] text-ink-400">{t(s)}</span>
             </div>
           ))}
         </div>
         <div className="mt-5 space-y-2 rounded-2xl bg-ink-900 p-3 text-xs">
-          <div className="flex justify-between"><span>2 × Pepperoni</span><span>210 kr.</span></div>
-          <div className="flex justify-between"><span>1 × Pommes frites</span><span>35 kr.</span></div>
-          <div className="flex justify-between text-ink-400"><span>Levering</span><span>39 kr.</span></div>
-          <div className="flex justify-between border-t border-white/10 pt-2 font-semibold"><span>Total</span><span>284 kr.</span></div>
+          <div className="flex justify-between"><span>{t("2 × Pepperoni")}</span><span>{t("210 kr.")}</span></div>
+          <div className="flex justify-between"><span>{t("1 × Pommes frites")}</span><span>{t("35 kr.")}</span></div>
+          <div className="flex justify-between text-ink-400"><span>{t("Levering")}</span><span>{t("39 kr.")}</span></div>
+          <div className="flex justify-between border-t border-white/10 pt-2 font-semibold"><span>{t("Total")}</span><span>{t("284 kr.")}</span></div>
         </div>
         <div className="mt-3 grid grid-cols-2 gap-2 text-[11px] font-semibold">
-          <span className="rounded-xl bg-ember-500 py-2 text-center text-white">🛵 Levering</span>
-          <span className="rounded-xl bg-white/5 py-2 text-center text-ink-300">🛍️ Afhentning</span>
+          <span className="rounded-xl bg-ember-500 py-2 text-center text-white">{t("🛵 Levering")}</span>
+          <span className="rounded-xl bg-white/5 py-2 text-center text-ink-300">{t("🛍️ Afhentning")}</span>
         </div>
-        <p className="mt-3 rounded-xl bg-emerald-400/10 py-2 text-center text-[11px] text-emerald-300">✓ Betalt med MobilePay</p>
+        <p className="mt-3 rounded-xl bg-emerald-400/10 py-2 text-center text-[11px] text-emerald-300">{t("✓ Betalt med MobilePay")}</p>
       </div>
     </div>
   );
 }
 
 export function BookingVisual() {
-  const days = ["Tor 24", "Fre 25", "Lør 26", "Søn 27"];
+  const { t, locale } = useI18n();
+  const days = [[4, 24], [5, 25], [6, 26], [0, 27]].map(([d, n]) => `${dayShort(d, locale)} ${n}`);
   const times = ["17:30", "18:00", "18:30", "19:00", "19:30", "20:00", "20:30", "21:00"];
   return (
     <div className="card p-6">
       <div className="flex items-center justify-between">
-        <p className="font-semibold">Book bord · Bella Napoli</p>
-        <span className="rounded-full bg-white/5 px-3 py-1 text-xs">👥 4 personer</span>
+        <p className="font-semibold">{t("Book bord · Bella Napoli")}</p>
+        <span className="rounded-full bg-white/5 px-3 py-1 text-xs">{t("👥 4 personer")}</span>
       </div>
       <div className="mt-4 grid grid-cols-4 gap-2">
         {days.map((d, i) => (
@@ -177,28 +185,29 @@ export function BookingVisual() {
         ))}
       </div>
       <div className="mt-4 grid grid-cols-4 gap-2">
-        {times.map((t, i) => (
-          <div key={t} className={`rounded-xl py-2 text-center text-xs tabular-nums ${i === 3 ? "bg-white font-bold text-ink-950" : i === 1 || i === 5 ? "bg-white/5 text-ink-400 line-through opacity-40" : "bg-white/5"}`}>{t}</div>
+        {times.map((time, i) => (
+          <div key={time} className={`rounded-xl py-2 text-center text-xs tabular-nums ${i === 3 ? "bg-white font-bold text-ink-950" : i === 1 || i === 5 ? "bg-white/5 text-ink-400 line-through opacity-40" : "bg-white/5"}`}>{time}</div>
         ))}
       </div>
       <div className="mt-5 flex items-center gap-3 rounded-2xl border border-emerald-400/25 bg-emerald-400/10 p-3 text-sm">
         <Icon name="check" className="h-5 w-5 text-emerald-300" />
-        <span><strong>Bordet er booket</strong> – fredag kl. 19:00 · ref. BN-4217</span>
+        <span><strong>{t("Bordet er booket")}</strong> {t("– fredag kl. 19:00 · ref. BN-4217")}</span>
       </div>
-      <p className="mt-3 text-xs text-ink-400">🎙️ Booket via AI-telefon · ændring/afbud håndteres også af AI&apos;en</p>
+      <p className="mt-3 text-xs text-ink-400">{t("🎙️ Booket via AI-telefon · ændring/afbud håndteres også af AI'en")}</p>
     </div>
   );
 }
 
 export function QrNfcVisual({ slug, table = 7 }: { slug: string; table?: number }) {
+  const t = useT();
   const href = `/m/${slug}?bord=${table}`;
   return (
     <div className="relative grid items-end gap-6 sm:grid-cols-2">
       {/* Bordkort */}
       <div className="relative mx-auto w-60">
         <div className="rounded-t-3xl rounded-b-lg bg-cream p-5 text-ink-950 shadow-2xl">
-          <p className="text-center font-display text-lg font-semibold">Bella Napoli</p>
-          <p className="text-center text-[11px] text-ink-600">Scan og se menukortet</p>
+          <p className="text-center font-display text-lg font-semibold">{t("Bella Napoli")}</p>
+          <p className="text-center text-[11px] text-ink-600">{t("Scan og se menukortet")}</p>
           <div className="mx-auto mt-3 h-36 w-36 rounded-xl bg-white p-1.5">
             <QrCode value={href} className="h-full w-full" />
           </div>
@@ -207,7 +216,7 @@ export function QrNfcVisual({ slug, table = 7 }: { slug: string; table?: number 
               <span className="absolute inset-0 animate-ping rounded-full bg-ember-500/40" />
               📶
             </span>
-            NFC · Tryk og giv os ⭐⭐⭐⭐⭐
+            {t("NFC · Tryk og giv os ⭐⭐⭐⭐⭐")}
           </div>
         </div>
         <div className="mx-auto h-3 w-52 rounded-b-xl bg-black/40" />
@@ -215,24 +224,25 @@ export function QrNfcVisual({ slug, table = 7 }: { slug: string; table?: number 
       {/* Telefon med menukort */}
       <div className="mx-auto w-56 rounded-[36px] border-[8px] border-ink-800 bg-ink-950 p-3 shadow-2xl">
         <div className="mx-auto mb-2 h-1 w-14 rounded-full bg-ink-800" />
-        <p className="rounded-xl bg-ember-500/15 px-2 py-1.5 text-center text-[10px] text-ember-300">🪑 Du bestiller til bord {table}</p>
-        <p className="mt-2 text-xs font-semibold">Online menukort</p>
+        <p className="rounded-xl bg-ember-500/15 px-2 py-1.5 text-center text-[10px] text-ember-300">{t("🪑 Du bestiller til bord {n}", { n: table })}</p>
+        <p className="mt-2 text-xs font-semibold">{t("Online menukort")}</p>
         {[["🍕", "Margherita", "89 kr."], ["🍕", "Pepperoni", "95 kr."], ["🍺", "Peroni", "45 kr."], ["🥖", "Hvidløgsbrød", "39 kr."]].map(([e, n, p]) => (
           <div key={n} className="mt-1.5 flex items-center justify-between rounded-xl bg-ink-900 px-2 py-2 text-[11px]">
-            <span>{e} {n}</span>
+            <span>{e} {t(n)}</span>
             <span className="flex items-center gap-1.5 text-ink-400">{p}<span className="grid h-4 w-4 place-items-center rounded-full bg-ember-500 text-[10px] text-white">+</span></span>
           </div>
         ))}
-        <p className="mt-2 rounded-xl bg-ember-500 py-2 text-center text-[11px] font-semibold text-white">Bestil til bordet · 229 kr.</p>
+        <p className="mt-2 rounded-xl bg-ember-500 py-2 text-center text-[11px] font-semibold text-white">{t("Bestil til bordet · 229 kr.")}</p>
       </div>
       <Link href={href} className="absolute -top-3 right-0 hidden rounded-full bg-white px-3 py-1.5 text-xs font-bold text-ink-950 shadow-xl sm:block">
-        Åbn som gæst →
+        {t("Åbn som gæst →")}
       </Link>
     </div>
   );
 }
 
 export function WebsitesVisual({ restaurants }: { restaurants: Restaurant[] }) {
+  const t = useT();
   return (
     <div className="relative h-[380px]">
       {restaurants.slice(0, 3).map((r, i) => (
@@ -248,7 +258,7 @@ export function WebsitesVisual({ restaurants }: { restaurants: Restaurant[] }) {
               <div className="absolute inset-0 bg-gradient-to-t from-black/85 to-transparent" />
               <div className="absolute bottom-3 left-4">
                 <p className="font-display text-xl font-semibold">{r.name}</p>
-                <span className="mt-1 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white" style={{ background: r.accentColor }}>Bestil · Book bord</span>
+                <span className="mt-1 inline-block rounded-full px-2.5 py-0.5 text-[10px] font-bold text-white" style={{ background: r.accentColor }}>{t("Bestil · Book bord")}</span>
               </div>
             </div>
           </BrowserFrame>
@@ -260,6 +270,7 @@ export function WebsitesVisual({ restaurants }: { restaurants: Restaurant[] }) {
 
 /** Visuel forhåndsvisning af backend: opkald, ordrer, KPI'er. */
 export function BackendPreview() {
+  const t = useT();
   const calls = [
     { t: "19:42", who: "+45 22 •• •• 18", o: "Ordre #1052", c: "bg-emerald-400/15 text-emerald-300", d: "1:34" },
     { t: "19:38", who: "Voice widget", o: "Bord booket", c: "bg-ember-500/15 text-ember-300", d: "0:58" },
@@ -271,33 +282,33 @@ export function BackendPreview() {
       <div className="grid grid-cols-[120px_1fr] text-[11px] sm:grid-cols-[150px_1fr]">
         <aside className="space-y-1 border-r border-white/8 bg-ink-900/60 p-3">
           {["📊 Dashboard", "📞 Opkald", "🧾 Ordrer", "📅 Reservationer", "📱 QR & NFC", "🍕 Menu", "🔌 Integrationer", "✨ AI-assistent"].map((n, i) => (
-            <p key={n} className={`rounded-lg px-2 py-1.5 ${i === 1 ? "bg-white/8 font-semibold text-white" : "text-ink-400"}`}>{n}</p>
+            <p key={n} className={`rounded-lg px-2 py-1.5 ${i === 1 ? "bg-white/8 font-semibold text-white" : "text-ink-400"}`}>{t(n)}</p>
           ))}
         </aside>
         <div className="space-y-3 p-4">
           <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
             {[["Opkald i dag", "86"], ["Besvaret", "100%"], ["Ordrer via AI", "41"], ["Omsætning", "12.480 kr."]].map(([l, v]) => (
               <div key={l} className="rounded-xl bg-ink-850 p-2.5">
-                <p className="text-[10px] text-ink-400">{l}</p>
+                <p className="text-[10px] text-ink-400">{t(l)}</p>
                 <p className="font-display text-base font-semibold">{v}</p>
               </div>
             ))}
           </div>
           <div className="rounded-xl bg-ink-850 p-3">
             <div className="mb-2 flex items-center justify-between">
-              <p className="font-semibold">Live opkald</p>
-              <span className="flex items-center gap-1.5 text-emerald-300"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />1 i gang</span>
+              <p className="font-semibold">{t("Live opkald")}</p>
+              <span className="flex items-center gap-1.5 text-emerald-300"><span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />{t("1 i gang")}</span>
             </div>
             <Waveform bars={40} className="!h-8" />
-            <p className="mt-2 text-ink-300">“…en Pepperoni og en Hawaii med ekstra ost, leveret.”</p>
+            <p className="mt-2 text-ink-300">{t("“…en Pepperoni og en Hawaii med ekstra ost, leveret.”")}</p>
           </div>
           <div className="divide-y divide-white/5 rounded-xl bg-ink-850">
             {calls.map((c) => (
               <div key={c.t} className="flex items-center justify-between gap-2 px-3 py-2">
                 <span className="text-ink-400 tabular-nums">{c.t}</span>
-                <span className="flex-1 truncate">{c.who}</span>
+                <span className="flex-1 truncate">{t(c.who)}</span>
                 <span className="text-ink-400 tabular-nums">{c.d}</span>
-                <span className={`rounded-full px-2 py-0.5 font-semibold ${c.c}`}>{c.o}</span>
+                <span className={`rounded-full px-2 py-0.5 font-semibold ${c.c}`}>{t(c.o)}</span>
               </div>
             ))}
           </div>
@@ -309,13 +320,14 @@ export function BackendPreview() {
 
 /** Flow: kanaler → AI-receptionist → resultat → backend. */
 export function ChannelFlow() {
+  const t = useT();
   const channels = [["📞", "Telefon"], ["🎙️", "Voice widget"], ["💬", "Chat"], ["📱", "QR / NFC"], ["🌐", "Hjemmeside"]];
   const outcomes = [["🍕", "Bestilling"], ["🥡", "Takeaway"], ["🍽️", "Bordbooking"], ["❓", "Svar"]];
   return (
     <div className="grid items-center gap-6 lg:grid-cols-[1fr_auto_1fr_auto_1fr]">
       <div className="grid gap-2">
-        {channels.map(([e, t]) => (
-          <div key={t} className="flex items-center gap-3 rounded-2xl border border-white/8 bg-ink-900 px-4 py-3 text-sm"><span className="text-lg">{e}</span>{t}</div>
+        {channels.map(([e, label]) => (
+          <div key={label} className="flex items-center gap-3 rounded-2xl border border-white/8 bg-ink-900 px-4 py-3 text-sm"><span className="text-lg">{e}</span>{t(label)}</div>
         ))}
       </div>
       <Arrow />
@@ -323,25 +335,166 @@ export function ChannelFlow() {
         <span className="absolute inset-0 animate-pulse-ring rounded-full" />
         <div>
           <p className="text-4xl">✨</p>
-          <p className="mt-2 font-display text-xl font-semibold">AI-receptionist</p>
-          <p className="text-xs text-white/80">forstår · spørger · handler</p>
+          <p className="mt-2 font-display text-xl font-semibold">{t("AI-receptionist")}</p>
+          <p className="text-xs text-white/80">{t("forstår · spørger · handler")}</p>
         </div>
       </div>
       <Arrow />
       <div className="grid gap-2">
-        {outcomes.map(([e, t]) => (
-          <div key={t} className="flex items-center gap-3 rounded-2xl border border-white/8 bg-ink-900 px-4 py-3 text-sm"><span className="text-lg">{e}</span>{t}</div>
+        {outcomes.map(([e, label]) => (
+          <div key={label} className="flex items-center gap-3 rounded-2xl border border-white/8 bg-ink-900 px-4 py-3 text-sm"><span className="text-lg">{e}</span>{t(label)}</div>
         ))}
-        <div className="flex items-center gap-3 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-200">🖥️ Direkte i jeres backend / POS</div>
+        <div className="flex items-center gap-3 rounded-2xl border border-emerald-400/30 bg-emerald-400/10 px-4 py-3 text-sm font-semibold text-emerald-200">{t("🖥️ Direkte i jeres backend / POS")}</div>
       </div>
     </div>
   );
 }
 
 function Arrow() {
+  const t = useT();
   return (
     <div className="flex justify-center text-ember-400" aria-hidden>
       <svg viewBox="0 0 24 24" className="h-8 w-8 rotate-90 lg:rotate-0" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14m-6-6 6 6-6 6" /></svg>
     </div>
+  );
+}
+
+/** Interaktiv forhåndsvisning: sådan opretter restauranten QR-koder og NFC-chips i sit login (30 € pr. stk.). */
+export function QrNfcSetupVisual({ slug, name }: { slug: string; name: string }) {
+  const t = useT();
+  const [tab, setTab] = useState<"qr" | "nfc">("qr");
+  const [target, setTarget] = useState<"table" | "menu">("table");
+  const [count, setCount] = useState(6);
+  const [nfcCount, setNfcCount] = useState(2);
+  const [review, setReview] = useState(`https://g.page/r/${slug}/review`);
+  const PRICE = 30;
+  const qty = tab === "qr" ? (target === "menu" ? 1 : count) : nfcCount;
+  const steps = tab === "qr" ? ["Opret i dit login", "Print QR-koderne", "Sæt dem på bordene"] : ["Indsæt dit anmeldelseslink", "Vi sender NFC-chippen", "Skift linket når som helst"];
+
+  return (
+    <BrowserFrame url="app.aibooking.dk/admin/qr-nfc">
+      <div className="grid gap-0 lg:grid-cols-[1fr_1.1fr]">
+        {/* Formular */}
+        <div className="space-y-5 border-b border-white/8 p-5 sm:p-6 lg:border-r lg:border-b-0">
+          <div className="flex rounded-full bg-white/5 p-1 text-sm font-semibold">
+            {(["qr", "nfc"] as const).map((k) => (
+              <button key={k} onClick={() => setTab(k)} className={`flex-1 rounded-full px-4 py-2 transition ${tab === k ? "bg-white text-ink-950" : "text-ink-300 hover:text-white"}`}>
+                {k === "qr" ? `🔳 ${t("QR-kode")}` : `⭐ ${t("NFC-chip")}`}
+              </button>
+            ))}
+          </div>
+
+          <ol className="grid grid-cols-3 gap-2 text-[11px]">
+            {steps.map((s, i) => (
+              <li key={s} className="rounded-xl bg-ink-850 p-2.5">
+                <span className="mb-1 grid h-5 w-5 place-items-center rounded-full bg-ember-500 text-[10px] font-bold text-white">{i + 1}</span>
+                {t(s)}
+              </li>
+            ))}
+          </ol>
+
+          {tab === "qr" ? (
+            <>
+              <label className="block">
+                <span className="label">{t("Hvad skal QR-koden åbne?")}</span>
+                <div className="grid grid-cols-2 gap-2">
+                  {(
+                    [
+                      ["table", "Bestilling ved bordet"],
+                      ["menu", "Online menukort"],
+                    ] as const
+                  ).map(([k, l]) => (
+                    <button key={k} type="button" onClick={() => setTarget(k)} className={`rounded-2xl border px-3 py-2.5 text-left text-sm transition ${target === k ? "border-ember-500 bg-ember-500/10" : "border-white/10 hover:border-white/25"}`}>
+                      {t(l)}
+                    </button>
+                  ))}
+                </div>
+              </label>
+              {target === "table" && (
+                <label className="block">
+                  <span className="label">{t("Antal borde")}</span>
+                  <div className="flex items-center gap-3">
+                    <input type="range" min={1} max={24} value={count} onChange={(e) => setCount(Number(e.target.value))} className="flex-1 accent-[#f06a3a]" />
+                    <span className="w-10 text-right font-semibold tabular-nums">{count}</span>
+                  </div>
+                </label>
+              )}
+            </>
+          ) : (
+            <>
+              <label className="block">
+                <span className="label">{t("Anmeldelseslink (fx Google, Trustpilot, TripAdvisor)")}</span>
+                <input className="input" value={review} onChange={(e) => setReview(e.target.value)} />
+              </label>
+              <div className="rounded-2xl bg-ink-850 p-3 text-xs">
+                <p className="text-ink-400">{t("Adresse på chippen:")}</p>
+                <p className="mt-1 font-mono">aibooking.dk/r/{slug}</p>
+                <p className="mt-2 text-ink-400">{t("Chippen ændres aldrig – I styrer selv, hvor den sender gæsten hen.")}</p>
+              </div>
+              <label className="block">
+                <span className="label">{t("Antal NFC-chips")}</span>
+                <div className="flex items-center gap-3">
+                  <input type="range" min={1} max={20} value={nfcCount} onChange={(e) => setNfcCount(Number(e.target.value))} className="flex-1 accent-[#f06a3a]" />
+                  <span className="w-10 text-right font-semibold tabular-nums">{nfcCount}</span>
+                </div>
+              </label>
+            </>
+          )}
+
+          <div className="flex items-center justify-between rounded-2xl border border-ember-500/30 bg-ember-500/10 px-4 py-3">
+            <span className="text-sm text-ink-300">
+              {qty} × {PRICE} € {t("pr. stk.")}
+            </span>
+            <span className="font-display text-2xl font-semibold">{qty * PRICE} €</span>
+          </div>
+          <Link href="/admin/qr-nfc" className="btn-primary w-full">
+            {tab === "qr" ? t("Opret og print QR-koder") : t("Bestil NFC-chips")}
+          </Link>
+        </div>
+
+        {/* Forhåndsvisning */}
+        <div className="bg-gradient-to-br from-ink-900 to-ink-950 p-5 sm:p-6">
+          <p className="mb-4 text-xs font-bold tracking-wider text-ink-400 uppercase">{t("Forhåndsvisning")}</p>
+          {tab === "qr" ? (
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {Array.from({ length: Math.min(target === "menu" ? 1 : count, 6) }, (_, i) => (
+                <div key={`${target}-${i}`} className="animate-pop rounded-2xl bg-cream p-3 text-center text-ink-950">
+                  <p className="truncate font-display text-xs font-semibold">{name}</p>
+                  <div className="mx-auto my-2 aspect-square w-full max-w-24 rounded-lg bg-white p-1">
+                    <QrCode value={target === "menu" ? `/m/${slug}` : `/m/${slug}?bord=${i + 1}`} className="h-full w-full" />
+                  </div>
+                  <p className="text-xs font-semibold">{target === "menu" ? t("Menukort") : t("Bord {n}", { n: i + 1 })}</p>
+                  <p className="text-[10px] text-ink-600">{target === "menu" ? t("Scan og se menukortet") : t("Scan og bestil")}</p>
+                </div>
+              ))}
+              {target === "table" && count > 6 && (
+                <div className="grid place-items-center rounded-2xl border border-dashed border-white/15 p-3 text-center text-sm text-ink-300">
+                  {t("+ {n} flere", { n: count - 6 })}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="grid place-items-center gap-5 py-4">
+              <div className="relative grid h-44 w-44 place-items-center rounded-full bg-cream text-center text-ink-950 shadow-2xl">
+                <span className="absolute inset-3 rounded-full border-2 border-dashed border-ink-950/15" />
+                <div>
+                  <p className="text-3xl">📶</p>
+                  <p className="mt-1 font-display text-sm font-semibold">{name}</p>
+                  <p className="text-[11px]">{t("Tryk og giv os")}</p>
+                  <p className="text-sm">⭐⭐⭐⭐⭐</p>
+                </div>
+              </div>
+              <div className="flex w-full max-w-xs items-center gap-3 rounded-2xl bg-ink-850 p-3 text-xs">
+                <span className="text-xl">📱</span>
+                <span className="min-w-0">
+                  <span className="block text-ink-400">{t("Gæsten lander på:")}</span>
+                  <span className="block truncate font-mono text-white/85">{review || "—"}</span>
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </BrowserFrame>
   );
 }

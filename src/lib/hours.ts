@@ -1,5 +1,6 @@
 import type { OpeningHours, Restaurant } from "@/lib/types";
-import { DAY_SHORT } from "@/lib/format";
+import { dayShort } from "@/lib/format";
+import { translate, type Locale } from "@/lib/i18n";
 
 const toMin = (t: string) => {
   const [h, m] = t.split(":").map(Number);
@@ -43,18 +44,18 @@ export function isOpenNow(r: Restaurant, now = new Date()): boolean {
 }
 
 /** Grupperede åbningstider: "Man–Tor 11:00–22:00". Rækkefølge mandag → søndag. */
-export function groupedHours(r: Restaurant): { label: string; value: string }[] {
+export function groupedHours(r: Restaurant, locale: Locale = "da"): { label: string; value: string }[] {
   const order = [1, 2, 3, 4, 5, 6, 0];
   const rows: { days: number[]; value: string }[] = [];
   for (const d of order) {
     const h = r.openingHours.find((o) => o.day === d);
-    const value = !h || h.closed ? "Lukket" : `${h.open}–${h.close}`;
+    const value = !h || h.closed ? translate(locale, "Lukket") : `${h.open}–${h.close}`;
     const prev = rows[rows.length - 1];
     if (prev && prev.value === value) prev.days.push(d);
     else rows.push({ days: [d], value });
   }
   return rows.map(({ days, value }) => ({
-    label: days.length > 1 ? `${DAY_SHORT[days[0]]}–${DAY_SHORT[days[days.length - 1]]}` : DAY_SHORT[days[0]],
+    label: days.length > 1 ? `${dayShort(days[0], locale)}–${dayShort(days[days.length - 1], locale)}` : dayShort(days[0], locale),
     value,
   }));
 }
